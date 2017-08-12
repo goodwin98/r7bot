@@ -9,7 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class Settings {
+
+class Settings {
     private static final Logger log = LoggerFactory.getLogger(Settings.class);
 
 
@@ -17,7 +18,7 @@ public class Settings {
 
     static String BOT_PREFIX;
 
-    static public boolean load() {
+    static boolean load() {
         Properties properties = new Properties();
 
         try (FileInputStream fis = new FileInputStream("config.prop")) {
@@ -35,21 +36,9 @@ public class Settings {
         return true;
     }
 
-    static public void store(){
+    static void store(){
 
-        Properties properties = new Properties();
 
-        try(FileOutputStream fos = new FileOutputStream("config.prop")) {
-
-            properties.setProperty("BOT_TOKEN", BOT_TOKEN);
-            properties.setProperty("BOT_PREFIX", BOT_PREFIX);
-
-            properties.store(fos, "comment");
-        }
-        catch (IOException e)
-        {
-
-        }
 
     }
 }

@@ -10,13 +10,13 @@ import java.io.IOException;
 import java.util.Properties;
 
 
-class Settings {
+public class Settings {
     private static final Logger log = LoggerFactory.getLogger(Settings.class);
 
 
     static String BOT_TOKEN;
-
     static String BOT_PREFIX;
+    static public String YOUTUBE_KEY;
 
     static boolean load() {
         Properties properties = new Properties();
@@ -26,7 +26,7 @@ class Settings {
             properties.load(fis);
             BOT_TOKEN = properties.getProperty("BOT_TOKEN");
             BOT_PREFIX = properties.getProperty("BOT_PREFIX");
-
+            YOUTUBE_KEY = properties.getProperty("YOUTUBE_KEY");
 
         } catch (IOException e){
             log.error("Settings file not load", e);

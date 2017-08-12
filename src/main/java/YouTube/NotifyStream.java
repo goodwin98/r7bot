@@ -14,10 +14,10 @@ import java.util.TimerTask;
 public class NotifyStream extends TimerTask {
     private static final Logger log = LoggerFactory.getLogger(NotifyStream.class);
 
-    static List<Channel> youTubechannels = new ArrayList<>();
-    static List<IChannel> discordChannel = new ArrayList<>();
-    static boolean isTimer = false;
-    static Timer timer;
+    private static List<Channel> youTubechannels = new ArrayList<>();
+    private static List<IChannel> discordChannel = new ArrayList<>();
+    private static boolean isTimer = false;
+    private static Timer timer;
     static {
         addYouTubeChannel("UCNrzUrkiCUnb8e0nFpgx8Cw"); // r7ge channel
         //addYouTubeChannel("UCmuKs-oja_1nG4z4Y1NwPqQ"); // yxo channel
@@ -36,7 +36,7 @@ public class NotifyStream extends TimerTask {
         RunTimer();
     }
 
-    void RunTimer()
+    private void RunTimer()
     {
 
         if(!isTimer)
@@ -44,13 +44,14 @@ public class NotifyStream extends TimerTask {
             timer = new Timer();
             timer.schedule(this,1000,30000);
             isTimer = true;
+            log.debug("Timer start");
         }
     }
 
-    static void addYouTubeChannel(String id){
+    private static void addYouTubeChannel(String id){
         youTubechannels.add(new Channel(id));
     }
-    static void addDiscordChannel(IChannel chan)
+    private static void addDiscordChannel(IChannel chan)
     {
         discordChannel.add(chan);
     }

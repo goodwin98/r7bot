@@ -11,7 +11,7 @@ class MessageBuilder {
         EmbedBuilder builder = new EmbedBuilder();
 
 
-        builder.withTitle(video.snippet.channelTitle + " начал стримить!:r7geEyes:");
+        builder.withTitle(video.snippet.channelTitle + " начал стримить! :r7geEyes:");
         builder.withDescription(video.snippet.title);
         builder.withColor(255,0,0);
         builder.withImage(video.snippet.thumbnails.medium.url);

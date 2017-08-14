@@ -1,13 +1,14 @@
 package DiscordBot;
 
+import Statistic.StatsMain;
 import YouTube.NotifyStream;
 import sx.blah.discord.api.events.EventSubscriber;
-import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.guild.GuildCreateEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelEvent;
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelJoinEvent;
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelLeaveEvent;
+import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelMoveEvent;
+import sx.blah.discord.handle.obj.IGuild;
 
 import java.util.*;
 
@@ -16,33 +17,23 @@ public class DiscordEvents {
 
     // A static map of commands mapping from command string to the functional impl
     private static Map<String, Command> commandMap = new HashMap<>();
-    static NotifyStream notify;
+    private static NotifyStream notify;
+    private static HashMap<IGuild, StatsMain> statsList = new HashMap<>();
 
     // Statically populate the commandMap with the intended functionality
     // Might be better practise to do this from an instantiated objects constructor
     static {
 
 
-        commandMap.put("testcommand", (event, args) -> {
-            BotUtils.sendMessage(event.getChannel(), "You ran the test command with args: " + args);
-        });
+        commandMap.put("testcommand", (event, args) -> BotUtils.sendMessage(event.getChannel(), "You ran the test command with args: " + args));
 
-        commandMap.put("ping", (event, args) -> {
-            BotUtils.sendMessage(event.getChannel(), "pong");
-        });
+        commandMap.put("ping", (event, args) -> BotUtils.sendMessage(event.getChannel(), "pong"));
 
-        commandMap.put("exit", (event, args) -> {
-            System.exit(0);
-        });
+        commandMap.put("exit", (event, args) -> System.exit(0));
 
-        commandMap.put("check", (event, args) -> {
-            notify = new NotifyStream(event.getChannel());
+        commandMap.put("check", (event, args) -> notify = new NotifyStream(event.getChannel()));
 
-        });
-        commandMap.put("stop_notify", (event, args) -> {
-            notify.stop(event.getChannel());
-
-        });
+        commandMap.put("stop_notify", (event, args) -> notify.stop(event.getChannel()));
 
     }
 
@@ -76,20 +67,25 @@ public class DiscordEvents {
     @EventSubscriber
     public void onGuildCreated(GuildCreateEvent event) { // create or join to guild
 
+        statsList.put(event.getGuild(),new StatsMain(event.getGuild()));
+
     }
 
     @EventSubscriber
     public void onUserVoiceJoin(UserVoiceChannelJoinEvent event) {
 
+        statsList.get(event.getGuild()).userJoin(event.getUser(),event.getVoiceChannel());
     }
 
     @EventSubscriber
     public void onUserVoiceLeave(UserVoiceChannelLeaveEvent event) {
 
+        statsList.get(event.getGuild()).userLeave(event.getUser(), event.getVoiceChannel());
     }
 
     @EventSubscriber
-    public void onUserVoiceMove(UserVoiceChannelEvent event){
-
+    public void onUserVoiceMove(UserVoiceChannelMoveEvent event){
+        statsList.get(event.getGuild()).userLeave(event.getUser(), event.getOldChannel());
+        statsList.get(event.getGuild()).userJoin(event.getUser(),event.getNewChannel());
     }
 }

@@ -7,42 +7,39 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 
 public class DataBase {
     private static final Logger log = LoggerFactory.getLogger(DataBase.class);
 
-    Statement statement;
-    String server;
+    private Statement statement;
+    private Connection connection;
+    private String server;
 
-    void DataBase (int serverID, List<String> chans)
+    DataBase(int serverID)
     {
         server = String.valueOf(serverID);
         statement = ConnectDB();
         //TODO исключение при создании БД
 
-        String sql = "CREATE TABLE IF NOT EXISTS " + server + " ("
+        String sql = "CREATE TABLE IF NOT EXISTS '" + server + "' ("
                 + " id         INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + " user       INTEGER NOT NULL,"
-                + " data       INTEGER";
-        for(String chan: chans)
-        {
-            sql += ", '" + chan + "' INTEGER";
+                + " data       INTEGER);";
+        try {
+            statement.executeUpdate(sql);
+        }catch ( SQLException e){
+            log.error("DataBase not create",e);
         }
-        sql += ");";
-
 
     }
 
     private Statement ConnectDB()
     {
-        //Class.forName("org.sqlite.JDBC");
-
-        Connection connection = null;
+        connection = null;
         Statement statement = null;
+        try {
+            Class.forName("org.sqlite.JDBC");
 
-        try
-        {
             connection = DriverManager.getConnection("jdbc:sqlite:statistics.db");
             statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
@@ -53,18 +50,11 @@ public class DataBase {
         {
             log.error("Error in create database",e);
         }
-        finally
+        catch ( ClassNotFoundException e)
         {
-            try
-            {
-                if(connection != null)
-                    connection.close();
-            }
-            catch(SQLException e)
-            {
-                log.error("connection close failed.",e);
-            }
+            log.error("Class DataBase not found",e);
         }
+
         return statement;
 
     }

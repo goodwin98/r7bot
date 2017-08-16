@@ -24,7 +24,7 @@ class User {
         currentChan = chan;
     }
 
-    private void fixState()
+    void fixState()
     {
         long thisTime = System.currentTimeMillis() - firstTime;
         if(allTime.containsKey(currentChan))
@@ -53,5 +53,9 @@ class User {
 
     IChannel getCurrentChan() {
         return currentChan;
+    }
+
+    HashMap<IChannel,Long> getAllTime() {
+        return allTime;
     }
 }

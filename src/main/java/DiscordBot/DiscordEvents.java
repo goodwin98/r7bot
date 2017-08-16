@@ -1,24 +1,23 @@
 package DiscordBot;
 
-import Statistic.StatsMain;
 import YouTube.NotifyStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.GuildCreateEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelJoinEvent;
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelLeaveEvent;
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelMoveEvent;
-import sx.blah.discord.handle.obj.IGuild;
 
 import java.util.*;
 
 public class DiscordEvents {
-
+    private static final Logger log = LoggerFactory.getLogger(DiscordEvents.class);
 
     // A static map of commands mapping from command string to the functional impl
     private static Map<String, Command> commandMap = new HashMap<>();
     private static NotifyStream notify;
-    private static HashMap<IGuild, StatsMain> statsList = new HashMap<>();
 
     // Statically populate the commandMap with the intended functionality
     // Might be better practise to do this from an instantiated objects constructor
@@ -67,25 +66,29 @@ public class DiscordEvents {
     @EventSubscriber
     public void onGuildCreated(GuildCreateEvent event) { // create or join to guild
 
-        statsList.put(event.getGuild(),new StatsMain(event.getGuild()));
+        EventHelper.addGuild(event.getGuild());
 
     }
 
     @EventSubscriber
     public void onUserVoiceJoin(UserVoiceChannelJoinEvent event) {
 
-        statsList.get(event.getGuild()).userJoin(event.getUser(),event.getVoiceChannel());
+        if(EventHelper.getStatByGuild(event.getGuild()) != null)
+            EventHelper.getStatByGuild(event.getGuild()).userJoin(event.getUser(), event.getVoiceChannel());
+
     }
 
     @EventSubscriber
     public void onUserVoiceLeave(UserVoiceChannelLeaveEvent event) {
-
-        statsList.get(event.getGuild()).userLeave(event.getUser(), event.getVoiceChannel());
+        if(EventHelper.getStatByGuild(event.getGuild()) != null)
+            EventHelper.getStatByGuild(event.getGuild()).userLeave(event.getUser(), event.getVoiceChannel());
     }
 
     @EventSubscriber
     public void onUserVoiceMove(UserVoiceChannelMoveEvent event){
-        statsList.get(event.getGuild()).userLeave(event.getUser(), event.getOldChannel());
-        statsList.get(event.getGuild()).userJoin(event.getUser(),event.getNewChannel());
+        if(EventHelper.getStatByGuild(event.getGuild()) != null) {
+            EventHelper.getStatByGuild(event.getGuild()).userLeave(event.getUser(), event.getOldChannel());
+            EventHelper.getStatByGuild(event.getGuild()).userJoin(event.getUser(), event.getNewChannel());
+        }
     }
 }

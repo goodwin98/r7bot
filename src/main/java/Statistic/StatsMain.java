@@ -4,15 +4,18 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 
-import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 public class StatsMain {
 
     private DataBase dataBase;
-    private HashMap<IUser,User> users = new HashMap<>();
+    private Hashtable<IUser,User> users = new Hashtable<>();
+    private IGuild currentGuild;
 
     public StatsMain(IGuild guild){
 
+        currentGuild = guild;
         dataBase = new DataBase(guild.hashCode());
         for(IVoiceChannel voiceChannel : guild.getVoiceChannels())
         {
@@ -37,6 +40,23 @@ public class StatsMain {
        if (users.containsKey(user))
        {
            users.get(user).leave(channel);
+           //storeToBD();
        }
+    }
+    public void storeToBD(){
+
+        for(Map.Entry<IUser,User> entry : users.entrySet())
+        {
+            entry.getValue().fixState();
+            dataBase.saveUser(entry.getValue());
+        }
+        users.clear();
+        for(IVoiceChannel voiceChannel : currentGuild.getVoiceChannels())
+        {
+            for (IUser iUser:voiceChannel.getConnectedUsers())
+            {
+                users.put(iUser,new User(iUser,voiceChannel));
+            }
+        }
     }
 }

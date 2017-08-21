@@ -81,13 +81,14 @@ public class DiscordEvents {
     @EventSubscriber
     public void onUserVoiceLeave(UserVoiceChannelLeaveEvent event) {
         if(EventHelper.getStatByGuild(event.getGuild()) != null)
-            EventHelper.getStatByGuild(event.getGuild()).userLeave(event.getUser(), event.getVoiceChannel());
+            EventHelper.getStatByGuild(event.getGuild()).userLeave(event.getUser());
+
     }
 
     @EventSubscriber
     public void onUserVoiceMove(UserVoiceChannelMoveEvent event){
         if(EventHelper.getStatByGuild(event.getGuild()) != null) {
-            EventHelper.getStatByGuild(event.getGuild()).userLeave(event.getUser(), event.getOldChannel());
+            EventHelper.getStatByGuild(event.getGuild()).userLeave(event.getUser());
             EventHelper.getStatByGuild(event.getGuild()).userJoin(event.getUser(), event.getNewChannel());
         }
     }

@@ -2,41 +2,28 @@ package Statistic;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sx.blah.discord.handle.obj.IChannel;
 
 import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+
 
 public class DataBase {
     private static final Logger log = LoggerFactory.getLogger(DataBase.class);
 
     private Statement statement;
     private Connection connection;
-    private String server;
 
-    static final private String sqlCreateTable = "CREATE TABLE IF NOT EXISTS '%s' ("
-            + " id         INTEGER PRIMARY KEY AUTOINCREMENT,"
-            + " user       STRING NOT NULL,"
-            + " data       INTEGER);";
-
-    static final private String sqlGetTableInfo = "PRAGMA table_info('%s');";
-    static final private String sqlAddColumn = "ALTER TABLE '%s' ADD COLUMN '%s' INTEGER;";
-    static final private String sqlGetRowByUserAndDate = "SELECT * from '%s' WHERE user = '%s' AND data = %s;";
 
     DataBase(int serverID)
     {
-        server = String.valueOf(serverID);
         statement = ConnectDB();
         //TODO исключение при создании БД
 
         try {
-            statement.executeUpdate(String.format(sqlCreateTable,server));
+            createTables();
         }catch ( SQLException e){
             log.error("DataBase not create",e);
         }
@@ -68,69 +55,87 @@ public class DataBase {
         return statement;
 
     }
-    void saveUser(User user){
-
-        List<String> tableColumns = new ArrayList<>();
-        List<String> needCulumsToAdd = new ArrayList<>();
-        try {
-            ResultSet info = statement.executeQuery(String.format(sqlGetTableInfo, server));
-
-            while (info.next()) {
-                tableColumns.add(info.getString("name"));
-            }
-            Clock clock = Clock.system(ZoneId.of("Europe/Moscow"));
-            LocalDate ld = LocalDate.now(clock);
-            String nowData = DateTimeFormatter.ofPattern("yyyyMMdd").format(ld);
-
-            ResultSet row = statement.executeQuery(String.format(sqlGetRowByUserAndDate,server,user.getUser().getStringID(),nowData));
-
-            //TODO сделать все это добро на StringBuilder
-            if(row.next())
-            {
-                String sql = "UPDATE '"+server+ "' SET data = " + nowData;
-                for (Map.Entry<IChannel, Long> entry : user.getAllTime().entrySet()) {
-
-                    int old;
-                    if (!tableColumns.contains(entry.getKey().getStringID())) {
-                        needCulumsToAdd.add(entry.getKey().getStringID());
-                        old = 0;
-                    } else {
-                        old = row.getInt(entry.getKey().getStringID());
-                    }
-                    sql += ", '" + entry.getKey().getStringID() + "' = " + String.valueOf(old + entry.getValue()/1000);
-                }
-                sql += " WHERE user = " + user.getUser().getStringID() + " AND data = " + nowData + ";";
-                addColumsToDB(needCulumsToAdd);
-                statement.executeUpdate(sql);
-            }else {
-                String sql1 = "INSERT OR REPLACE INTO '" + server + "' (user, data ";
-                String sql2 = "VALUES (" + user.getUser().getStringID() + ", " + nowData;
-                for (Map.Entry<IChannel, Long> entry : user.getAllTime().entrySet()) {
-                    if (!tableColumns.contains(entry.getKey().getStringID())) {
-                        needCulumsToAdd.add(entry.getKey().getStringID());
-                    }
-                    sql1 += ", '" + entry.getKey().getStringID() + "' ";
-                    sql2 += ", " + entry.getValue()/1000;
-
-                }
-                String sql = sql1 + ") " + sql2 + ");";
-                addColumsToDB(needCulumsToAdd);
-                statement.executeUpdate(sql);
-            }
-
-
-        } catch (SQLException e) {
-            log.error("User not saved to DB" ,e);
-        }
-
-    }
-    private void addColumsToDB(List<String> colums) throws SQLException
+    private void createTables() throws SQLException
     {
 
-        for( String colum : colums)
-        {
-            statement.executeUpdate(String.format(sqlAddColumn,server,colum));
-        }
+        String sqlCreateChannels = "CREATE TABLE IF NOT EXISTS channels (" +
+                "    id     INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "    ChanID STRING  UNIQUE" +
+                "                   NOT NULL," +
+                "    Guild  INTEGER NOT NULL" +
+                ");";
+        String sqlCreateUserChan = "CREATE TABLE IF NOT EXISTS UserChan (" +
+                "    id      INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "    UserID  STRING  NOT NULL," +
+                "    channel INTEGER NOT NULL" +
+                ");";
+        String sqlCreateStats = "CREATE TABLE IF NOT EXISTS Stats (" +
+                "    id       INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "    Data     INTEGER NOT NULL," +
+                "    userchan INTEGER NOT NULL," +
+                "    Seconds  INTEGER NOT NULL" +
+                ");";
+
+        statement.executeUpdate(sqlCreateChannels);
+        statement.executeUpdate(sqlCreateUserChan);
+        statement.executeUpdate(sqlCreateStats);
 
     }
+
+    private int getChannel(String channel, int guild) throws SQLException
+    {
+        String sqlSelect = "SELECT id FROM channels WHERE ChanID = '%s';";
+        String sqlInsert = "INSERT INTO channels (ChanID, Guild) VALUES ('%s', %d);";
+
+        ResultSet row = statement.executeQuery(String.format(sqlSelect,channel));
+        if(!row.next())
+        {
+            statement.executeUpdate(String.format(sqlInsert,channel,guild));
+            row = statement.executeQuery(String.format(sqlSelect,channel));
+        }
+        return row.getInt("id");
+
+    }
+    private int getUserChan(String channel, int guild, String UserID) throws SQLException {
+
+        String sqlSelect = "SELECT id FROM UserChan WHERE UserID = '%s' AND channel = %d;";
+        String sqlInsert = "INSERT INTO UserChan (UserID, channel) VALUES ('%s',%d);";
+
+        int chan_id = getChannel(channel,guild);
+        ResultSet row = statement.executeQuery(String.format(sqlSelect,UserID,chan_id));
+        if(!row.next())
+        {
+            statement.executeUpdate(String.format(sqlInsert,UserID,chan_id));
+            row = statement.executeQuery(String.format(sqlSelect,UserID,chan_id));
+        }
+        return row.getInt("id");
+    }
+    void saveTime (User us, int guild)
+    {
+        String sqlSelect = "SELECT id, Seconds FROM Stats WHERE Data = %d AND userchan = %d;";
+        String sqlInsert = "INSERT INTO Stats (Data, userchan, Seconds) VALUES (%d, %d, %d);";
+        String sqlUpdate = "UPDATE Stats SET Seconds = %d WHERE id = %d;";
+
+        try {
+            int userchan_id = getUserChan(us.getCurrentChan().getStringID(), guild, us.getUser().getStringID());
+            Clock clock = Clock.system(ZoneId.of("Europe/Moscow"));
+            LocalDate ld = LocalDate.now(clock);
+            int nowData = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(ld));
+            ResultSet row = statement.executeQuery(String.format(sqlSelect, nowData,userchan_id));
+            if(!row.next())
+            {
+                statement.executeUpdate(String.format(sqlInsert,nowData,userchan_id,us.getTime()/1000));
+            } else {
+                int oldSeconds = row.getInt("Seconds");
+                int oldId = row.getInt("id");
+                statement.executeUpdate(String.format(sqlUpdate,oldSeconds + us.getTime()/1000, oldId));
+
+            }
+
+        } catch (SQLException e) {
+            log.error("Error save to dataBase" ,e);
+        }
+    }
+
+
 }

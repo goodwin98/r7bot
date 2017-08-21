@@ -3,12 +3,10 @@ package Statistic;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IUser;
 
-import java.util.HashMap;
-
 class User {
     private long firstTime;
     private IUser user;
-    private HashMap<IChannel,Long> allTime = new HashMap<>();
+
     private IChannel currentChan;
 
     User(IUser user, IChannel channel)
@@ -18,32 +16,9 @@ class User {
         currentChan = channel;
     }
 
-    void join(IChannel chan)
+    long getTime()
     {
-        firstTime = System.currentTimeMillis();
-        currentChan = chan;
-    }
-
-    void fixState()
-    {
-        long thisTime = System.currentTimeMillis() - firstTime;
-        if(allTime.containsKey(currentChan))
-        {
-            allTime.replace(currentChan,allTime.get(currentChan) + thisTime);
-        } else {
-            allTime.put(currentChan,thisTime);
-        }
-    }
-
-    void leave(IChannel chan)
-    {
-        if( currentChan != chan)
-        {
-            currentChan = null;
-        }
-        else {
-            fixState();
-        }
+        return System.currentTimeMillis() - firstTime;
     }
 
 
@@ -55,7 +30,4 @@ class User {
         return currentChan;
     }
 
-    HashMap<IChannel,Long> getAllTime() {
-        return allTime;
-    }
 }

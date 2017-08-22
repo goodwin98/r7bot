@@ -1,6 +1,6 @@
 package DiscordBot;
 
-import YouTube.YouTubeRequest;
+import DiscordBot.Settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sx.blah.discord.api.IDiscordClient;
@@ -14,7 +14,7 @@ public class main {
 
         if(!Settings.load())
             System.exit(1);
-        IDiscordClient cli = BotUtils.getBuiltDiscordClient(Settings.BOT_TOKEN);
+        IDiscordClient cli = BotUtils.getBuiltDiscordClient(Settings.body.BOT_TOKEN);
 
 
         // Register a listener via the EventSubscriber annotation which allows for organisation and delegation of events

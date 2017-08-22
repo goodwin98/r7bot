@@ -1,5 +1,6 @@
 package DiscordBot;
 
+import DiscordBot.Settings.Settings;
 import YouTube.NotifyStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class DiscordEvents {
 
         commandMap.put("exit", (event, args) -> System.exit(0));
 
-        commandMap.put("check", (event, args) -> notify = new NotifyStream(event.getChannel()));
+        //commandMap.put("check", (event, args) -> notify = new NotifyStream(event.getChannel()));
 
         commandMap.put("stop_notify", (event, args) -> notify.stop(event.getChannel()));
 
@@ -50,7 +51,7 @@ public class DiscordEvents {
             return;
 
 
-        if(!argArray[0].startsWith(Settings.BOT_PREFIX))
+        if(!argArray[0].startsWith(Settings.body.BOT_PREFIX))
             return;
 
         String commandStr = argArray[0].substring(1);

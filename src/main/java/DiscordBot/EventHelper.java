@@ -23,5 +23,6 @@ class EventHelper {
     static void addGuild(IGuild guild){
 
         statsList.put(guild, new StatsMain(guild));
+        notify = new NotifyStream(guild);
     }
 }

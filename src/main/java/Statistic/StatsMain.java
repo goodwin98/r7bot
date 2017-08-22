@@ -37,4 +37,9 @@ public class StatsMain {
            users.remove(user);
        }
     }
+
+    public void DisplayTopChannels()
+    {
+
+    }
 }

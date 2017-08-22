@@ -1,15 +1,13 @@
 package YouTube;
 
 import DiscordBot.BotUtils;
+import DiscordBot.Settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class NotifyStream extends TimerTask {
     private static final Logger log = LoggerFactory.getLogger(NotifyStream.class);
@@ -19,20 +17,26 @@ public class NotifyStream extends TimerTask {
     private static boolean isTimer = false;
     private static Timer timer;
     static {
-        addYouTubeChannel("UCNrzUrkiCUnb8e0nFpgx8Cw"); // r7ge channel
+        //addYouTubeChannel("UCNrzUrkiCUnb8e0nFpgx8Cw"); // r7ge channel
         //addYouTubeChannel("UCmuKs-oja_1nG4z4Y1NwPqQ"); // yxo channel
-
+        for(String stream : Settings.body.youTubeNotify.stramers){
+            addYouTubeChannel(stream);
+        }
     }
 
-    public NotifyStream(IChannel dscrdChan)
+    public NotifyStream(IGuild guild)
     {
-        for( IChannel chan : discordChannel)
+        for(Map.Entry<Long,Long> entry : Settings.body.youTubeNotify.chansForNotify.entrySet())
         {
-            if(dscrdChan == chan)
-                return;
+            if(guild.getLongID() == entry.getValue())
+            {
+                addDiscordChannel(guild.getChannelByID(entry.getKey()));
+                log.info("Added channel "+ guild.getChannelByID(entry.getKey()).getName()+ " to notify");
+            }
         }
-        addDiscordChannel(dscrdChan);
-        log.info("Added channel "+ dscrdChan.getName()+ " to notify");
+
+        //addDiscordChannel(dscrdChan);
+        //log.info("Added channel "+ dscrdChan.getName()+ " to notify");
         RunTimer();
     }
 
@@ -42,7 +46,7 @@ public class NotifyStream extends TimerTask {
         if(!isTimer)
         {
             timer = new Timer();
-            timer.schedule(this,1000,30000);
+            timer.schedule(this,10000,30000);
             isTimer = true;
             log.debug("Timer start");
         }

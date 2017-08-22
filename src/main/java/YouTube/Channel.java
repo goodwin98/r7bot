@@ -1,11 +1,8 @@
 package YouTube;
 
-import DiscordBot.BotUtils;
-import DiscordBot.Settings;
+import DiscordBot.Settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 class Channel {
 
@@ -21,7 +18,7 @@ class Channel {
 
 
     boolean isChangeStateToOnline() {
-        String url = "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=" + id + "&eventType=live&type=video&key=" + Settings.YOUTUBE_KEY;
+        String url = "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=" + id + "&eventType=live&type=video&key=" + Settings.body.YOUTUBE_KEY;
         if(waitCount > 0) {
             waitCount--;
             return false;

@@ -1,24 +1,23 @@
 package YouTube;
 
+import com.google.gson.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import com.google.gson.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class YouTubeRequest {
+class YouTubeRequest {
     private static final Logger log = LoggerFactory.getLogger(YouTubeRequest.class);
 
 
-    public static YouTubeVideo request(String url) throws Exception {
+    static YouTubeVideo request(String url) throws Exception {
 
-        //String url = "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=UCNrzUrkiCUnb8e0nFpgx8Cw&eventType=live&type=video&key=AIzaSyBSDawpBKl-9HvtFeoHDNA083H37DVXJT4";
 
-        StringBuffer response = new StringBuffer();
+        StringBuilder response = new StringBuilder();
         try {
             URL obj = new URL(url);
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -26,8 +25,6 @@ public class YouTubeRequest {
             // optional default is GET
             con.setRequestMethod("GET");
 
-            //add request header
-            // con.setRequestProperty("User-Agent", USER_AGENT);
             con.setRequestProperty("Accept-Charset", "UTF-8");
 
             int responseCode = con.getResponseCode();
@@ -44,16 +41,13 @@ public class YouTubeRequest {
             in.close();
         }
         catch(IOException e) {
-            //System.err.println("ќшибка при get запросе: " + e.getMessage());
             log.warn("Error with request",e);
             throw e;
         }
-        //System.out.println("parse : " + parse(response.toString()));
 
         if (isLive(response.toString()) == false)
                 return new YouTubeVideo();
-        YouTubeVideo video = parse(response.toString());
-        return video;
+        return parse(response.toString());
 
     }
 
@@ -61,8 +55,7 @@ public class YouTubeRequest {
         JsonParser parser = new JsonParser();
         JsonObject mainObject = parser.parse(json).getAsJsonObject();
         JsonArray items = mainObject.getAsJsonArray("items");
-        YouTubeVideo video = new Gson().fromJson(items.get(0),YouTubeVideo.class);
-        return video;
+        return new Gson().fromJson(items.get(0),YouTubeVideo.class);
 
     }
     private static boolean isLive(String json)

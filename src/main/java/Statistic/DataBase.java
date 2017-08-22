@@ -10,7 +10,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 
-public class DataBase {
+class DataBase {
     private static final Logger log = LoggerFactory.getLogger(DataBase.class);
 
     private Statement statement;
@@ -136,6 +136,14 @@ public class DataBase {
             log.error("Error save to dataBase" ,e);
         }
     }
+//    List<String,Integer> getTopChannels(int guild){
+//
+//        String sqlSelect = "SELECT ChanID, SUM(Seconds) FROM Stats JOIN" +
+//                "UserChan ON Stats.userchan = UserChan.id JOIN" +
+//                "channels ON UserChan.channel = channels.id WHERE Guild = %d GROUP BY ChanID ORDER BY SUM(Seconds) DESC;";
+//
+//
+//    }
 
 
 }

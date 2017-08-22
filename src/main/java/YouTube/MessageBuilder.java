@@ -1,7 +1,6 @@
 package YouTube;
 
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
-import sx.blah.discord.handle.obj.IEmbed;
 import sx.blah.discord.util.EmbedBuilder;
 
 class MessageBuilder {
@@ -11,7 +10,7 @@ class MessageBuilder {
         EmbedBuilder builder = new EmbedBuilder();
 
 
-        builder.withTitle(video.snippet.channelTitle + " начал стримить! :r7geEyes:");
+        builder.withTitle(video.snippet.channelTitle + " начал стримить!");
         builder.withDescription(video.snippet.title);
         builder.withColor(255,0,0);
         builder.withImage(video.snippet.thumbnails.medium.url);

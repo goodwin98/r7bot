@@ -62,7 +62,7 @@ class DataBase {
                 "    id     INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "    ChanID STRING  UNIQUE" +
                 "                   NOT NULL," +
-                "    Guild  INTEGER NOT NULL" +
+                "    Guild  STRING NOT NULL" +
                 ");";
         String sqlCreateUserChan = "CREATE TABLE IF NOT EXISTS UserChan (" +
                 "    id      INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -82,21 +82,21 @@ class DataBase {
 
     }
 
-    private int getChannel(String channel, int guild) throws SQLException
+    private int getChannel(String channel, long guild) throws SQLException
     {
         String sqlSelect = "SELECT id FROM channels WHERE ChanID = '%s';";
-        String sqlInsert = "INSERT INTO channels (ChanID, Guild) VALUES ('%s', %d);";
+        String sqlInsert = "INSERT INTO channels (ChanID, Guild) VALUES ('%s', '%s');";
 
         ResultSet row = statement.executeQuery(String.format(sqlSelect,channel));
         if(!row.next())
         {
-            statement.executeUpdate(String.format(sqlInsert,channel,guild));
+            statement.executeUpdate(String.format(sqlInsert,channel,Long.toString(guild)));
             row = statement.executeQuery(String.format(sqlSelect,channel));
         }
         return row.getInt("id");
 
     }
-    private int getUserChan(String channel, int guild, String UserID) throws SQLException {
+    private int getUserChan(String channel, long guild, String UserID) throws SQLException {
 
         String sqlSelect = "SELECT id FROM UserChan WHERE UserID = '%s' AND channel = %d;";
         String sqlInsert = "INSERT INTO UserChan (UserID, channel) VALUES ('%s',%d);";
@@ -110,7 +110,7 @@ class DataBase {
         }
         return row.getInt("id");
     }
-    void saveTime (User us, int guild)
+    void saveTime (User us, long guild)
     {
         String sqlSelect = "SELECT id, Seconds FROM Stats WHERE Data = %d AND userchan = %d;";
         String sqlInsert = "INSERT INTO Stats (Data, userchan, Seconds) VALUES (%d, %d, %d);";

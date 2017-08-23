@@ -35,6 +35,10 @@ public class DiscordEvents {
 
         commandMap.put("stop_notify", (event, args) -> notify.stop(event.getChannel()));
 
+        commandMap.put("top_chans", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayTopChannels(event.getChannel()));
+
+        commandMap.put("top_users", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayTopUsersByChannels(event.getChannel(),args));
+
     }
 
     @EventSubscriber

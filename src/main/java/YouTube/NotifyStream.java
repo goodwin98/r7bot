@@ -35,8 +35,6 @@ public class NotifyStream extends TimerTask {
             }
         }
 
-        //addDiscordChannel(dscrdChan);
-        //log.info("Added channel "+ dscrdChan.getName()+ " to notify");
         RunTimer();
     }
 

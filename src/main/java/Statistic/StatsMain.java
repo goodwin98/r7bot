@@ -1,10 +1,14 @@
 package Statistic;
 
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 public class StatsMain {
 
@@ -33,13 +37,64 @@ public class StatsMain {
     {
        if (users.containsKey(user))
        {
-           dataBase.saveTime(users.get(user),currentGuild.hashCode());
+           dataBase.saveTime(users.get(user),currentGuild.getLongID());
            users.remove(user);
        }
     }
 
-    public void DisplayTopChannels()
+    public void displayTopChannels(IChannel channel)
     {
+        ResultDataBase base = dataBase.getTopChannels(currentGuild.getLongID());
+        List<String> result = new ArrayList<>();
+        int i = 1;
+        for(Map.Entry<Integer,String> entry : base.chans.entrySet())
+        {
+            StringBuilder row = new StringBuilder();
+            row.append(i);
+            row.append(". ");
+            if (currentGuild.getVoiceChannelByID(Long.valueOf(entry.getValue())) != null)
+                row.append(currentGuild.getVoiceChannelByID(Long.valueOf(entry.getValue())).getName());
+            else
+                row.append(Long.valueOf(entry.getValue()));
+            row.append("\t\t");
+            row.append(formatSeconds(entry.getKey()));
+            result.add(row.toString());
+            i++;
 
+        }
+        channel.sendMessage(MessageBuilder.topChannels(result,String.valueOf(base.min), String.valueOf(base.max)));
+    }
+
+    public void displayTopUsersByChannels(IChannel channel, List<String> chanToTop)
+    {
+        if (chanToTop.size() != 0)
+        {
+            ResultDataBase base = dataBase.getTopUsersByChannel(currentGuild.getLongID(),chanToTop.get(0));
+            List<String> result = new ArrayList<>();
+            int i = 1;
+            for (Map.Entry<Integer,String> entry : base.users.entrySet())
+            {
+                StringBuilder row = new StringBuilder();
+                row.append(i);
+                row.append(". ");
+                if (currentGuild.getUserByID(Long.valueOf(entry.getValue())) != null)
+                    row.append(currentGuild.getUserByID(Long.valueOf(entry.getValue())).getName());
+                else
+                    row.append(Long.valueOf(entry.getValue()));
+                row.append("\t\t");
+                row.append(formatSeconds(entry.getKey()));
+                result.add(row.toString());
+                i++;
+            }
+            channel.sendMessage(MessageBuilder.topUserByChan(result,currentGuild.getVoiceChannelByID(Long.valueOf(chanToTop.get(0))).getName(),String.valueOf(base.min), String.valueOf(base.max)));
+        }
+    }
+    private String formatSeconds (int seconds)
+    {
+        return String.format(
+                "%d:%02d:%02d",
+                seconds / 3600,
+                (seconds % 3600) / 60,
+                seconds % 60);
     }
 }

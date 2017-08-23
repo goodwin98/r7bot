@@ -8,6 +8,8 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.TreeMap;
 
 
 class DataBase {
@@ -136,14 +138,63 @@ class DataBase {
             log.error("Error save to dataBase" ,e);
         }
     }
-//    List<String,Integer> getTopChannels(int guild){
-//
-//        String sqlSelect = "SELECT ChanID, SUM(Seconds) FROM Stats JOIN" +
-//                "UserChan ON Stats.userchan = UserChan.id JOIN" +
-//                "channels ON UserChan.channel = channels.id WHERE Guild = %d GROUP BY ChanID ORDER BY SUM(Seconds) DESC;";
-//
-//
-//    }
+    ResultDataBase getTopChannels(long guild){
+
+        String sqlSelect = "SELECT ChanID, SUM(Seconds), Data FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id WHERE Guild = %s GROUP BY ChanID ORDER BY SUM(Seconds) DESC;";
+
+        ResultDataBase result = new ResultDataBase();
+        result.chans = new TreeMap<>(Collections.reverseOrder());
+        result.max = 0;
+        result.min = 0;
+        try {
+            ResultSet row = statement.executeQuery(String.format(sqlSelect, Long.toString(guild)));
+            while (row.next()) {
+                result.chans.put(row.getInt("SUM(Seconds)"),row.getString("ChanID"));
+                if(row.getInt("Data") > result.max || result.max == 0){
+                    result.max = row.getInt("Data");
+                }
+                if (row.getInt("Data") < result.min || result.min == 0 ) {
+                    result.min = row.getInt("Data");
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error read database" ,e);
+            return result;
+        }
+        return result;
+    }
+
+    ResultDataBase getTopUsersByChannel (long guild, String chan_to_top)
+    {
+        String sqlSelect = "SELECT UserID, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = '%s' AND ChanId = '%s' GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 20;";
+
+        ResultDataBase result = new ResultDataBase();
+        result.users = new TreeMap<>(Collections.reverseOrder());
+        result.max = 0;
+        result.min = 0;
+        try {
+            ResultSet row = statement.executeQuery(String.format(sqlSelect, Long.toString(guild), chan_to_top));
+            while(row.next())
+            {
+                result.users.put(row.getInt("SUM(Seconds)"),row.getString("UserID"));
+                if(row.getInt("MAX(Data)") > result.max  || result.max == 0){
+                    result.max = row.getInt("MAX(Data)");
+                }
+                if (row.getInt("MIN(Data)") < result.min || result.min == 0 ) {
+                    result.min = row.getInt("MIN(Data)");
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error read database" ,e);
+            return result;
+        }
+        return result;
+    }
 
 
 }

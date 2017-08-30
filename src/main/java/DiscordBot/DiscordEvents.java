@@ -10,6 +10,8 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelJoinEvent;
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelLeaveEvent;
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelMoveEvent;
+import sx.blah.discord.handle.obj.IRole;
+import sx.blah.discord.handle.obj.Permissions;
 
 import java.util.*;
 
@@ -45,7 +47,16 @@ public class DiscordEvents {
     public void onMessageReceived(MessageReceivedEvent event){
 
 
-        if(event.getAuthor() != BotUtils.getClient().getUserByID(223528667874197504L)) // bot's owner
+        boolean flag = false;
+        for (IRole role : event.getAuthor().getRolesForGuild(event.getGuild())) {
+            for (Permissions permissions : role.getPermissions()) {
+                if (permissions == Permissions.BAN) {
+                    flag = true;
+                    break;
+                }
+            }
+        }
+        if(event.getAuthor() != BotUtils.getClient().getUserByID(223528667874197504L) && !flag ) // bot's owner
             return;
 
         String[] argArray = event.getMessage().getContent().split(" ");
@@ -80,6 +91,7 @@ public class DiscordEvents {
 
         if(EventHelper.getStatByGuild(event.getGuild()) != null)
             EventHelper.getStatByGuild(event.getGuild()).userJoin(event.getUser(), event.getVoiceChannel());
+
 
     }
 

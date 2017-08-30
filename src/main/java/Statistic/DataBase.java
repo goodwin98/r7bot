@@ -140,48 +140,46 @@ class DataBase {
     }
     ResultDataBase getTopChannels(long guild){
 
-        String sqlSelect = "SELECT ChanID, SUM(Seconds), Data FROM Stats JOIN " +
+        String sqlSelect = "SELECT ChanID AS first_columnn, SUM(Seconds), MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
                 "channels ON UserChan.channel = channels.id WHERE Guild = %s GROUP BY ChanID ORDER BY SUM(Seconds) DESC;";
 
-        ResultDataBase result = new ResultDataBase();
-        result.chans = new TreeMap<>(Collections.reverseOrder());
-        result.max = 0;
-        result.min = 0;
-        try {
-            ResultSet row = statement.executeQuery(String.format(sqlSelect, Long.toString(guild)));
-            while (row.next()) {
-                result.chans.put(row.getInt("SUM(Seconds)"),row.getString("ChanID"));
-                if(row.getInt("Data") > result.max || result.max == 0){
-                    result.max = row.getInt("Data");
-                }
-                if (row.getInt("Data") < result.min || result.min == 0 ) {
-                    result.min = row.getInt("Data");
-                }
-            }
-        } catch (SQLException e) {
-            log.error("Error read database" ,e);
-            return result;
-        }
-        return result;
+        return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild)));
     }
 
     ResultDataBase getTopUsersByChannel (long guild, String chan_to_top)
     {
-        String sqlSelect = "SELECT UserID, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
+        String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
                 "channels ON UserChan.channel = channels.id " +
                 "WHERE Guild = '%s' AND ChanId = '%s' GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 20;";
+
+
+        return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), chan_to_top));
+    }
+
+    ResultDataBase getTopUsersByGuild(long guild)
+    {
+        String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = '%s' GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 20;";
+
+        return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild)));
+
+    }
+
+    private ResultDataBase getTopSecondFromDB(String sqlSelect) {
 
         ResultDataBase result = new ResultDataBase();
         result.users = new TreeMap<>(Collections.reverseOrder());
         result.max = 0;
         result.min = 0;
         try {
-            ResultSet row = statement.executeQuery(String.format(sqlSelect, Long.toString(guild), chan_to_top));
+            ResultSet row = statement.executeQuery(sqlSelect);
             while(row.next())
             {
-                result.users.put(row.getInt("SUM(Seconds)"),row.getString("UserID"));
+                result.users.put(row.getInt("SUM(Seconds)"),row.getString("first_columnn"));
                 if(row.getInt("MAX(Data)") > result.max  || result.max == 0){
                     result.max = row.getInt("MAX(Data)");
                 }

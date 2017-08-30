@@ -67,27 +67,36 @@ public class StatsMain {
 
     public void displayTopUsersByChannels(IChannel channel, List<String> chanToTop)
     {
-        if (chanToTop.size() != 0)
-        {
-            ResultDataBase base = dataBase.getTopUsersByChannel(currentGuild.getLongID(),chanToTop.get(0));
-            List<String> result = new ArrayList<>();
-            int i = 1;
-            for (Map.Entry<Integer,String> entry : base.users.entrySet())
-            {
-                StringBuilder row = new StringBuilder();
-                row.append(i);
-                row.append(". ");
-                if (currentGuild.getUserByID(Long.valueOf(entry.getValue())) != null)
-                    row.append(currentGuild.getUserByID(Long.valueOf(entry.getValue())).getName());
-                else
-                    row.append(Long.valueOf(entry.getValue()));
-                row.append("\t\t");
-                row.append(formatSeconds(entry.getKey()));
-                result.add(row.toString());
-                i++;
+        ResultDataBase base;
+        if(chanToTop.size() != 0) {
+            if (currentGuild.getVoiceChannelByID(Long.valueOf(chanToTop.get(0))) == null) {
+                return;
             }
-            channel.sendMessage(MessageBuilder.topUserByChan(result,currentGuild.getVoiceChannelByID(Long.valueOf(chanToTop.get(0))).getName(),String.valueOf(base.min), String.valueOf(base.max)));
+            base = dataBase.getTopUsersByChannel(currentGuild.getLongID(), chanToTop.get(0));
+        } else {
+            base = dataBase.getTopUsersByGuild(currentGuild.getLongID());
         }
+        List<String> result = new ArrayList<>();
+        int i = 1;
+        for (Map.Entry<Integer, String> entry : base.users.entrySet()) {
+            StringBuilder row = new StringBuilder();
+            row.append(i);
+            row.append(". ");
+            if (currentGuild.getUserByID(Long.valueOf(entry.getValue())) != null)
+                row.append(currentGuild.getUserByID(Long.valueOf(entry.getValue())).getName());
+            else
+                row.append(Long.valueOf(entry.getValue()));
+            row.append("\t\t");
+            row.append(formatSeconds(entry.getKey()));
+            result.add(row.toString());
+            i++;
+        }
+        if(chanToTop.size() != 0) {
+            channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getVoiceChannelByID(Long.valueOf(chanToTop.get(0))).getName(), String.valueOf(base.min), String.valueOf(base.max)));
+        } else {
+            channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getName(), String.valueOf(base.min), String.valueOf(base.max)));
+        }
+
     }
     private String formatSeconds (int seconds)
     {

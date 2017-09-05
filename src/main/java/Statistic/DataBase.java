@@ -172,14 +172,14 @@ class DataBase {
     private ResultDataBase getTopSecondFromDB(String sqlSelect) {
 
         ResultDataBase result = new ResultDataBase();
-        result.users = new TreeMap<>(Collections.reverseOrder());
+        result.list = new TreeMap<>(Collections.reverseOrder());
         result.max = 0;
         result.min = 0;
         try {
             ResultSet row = statement.executeQuery(sqlSelect);
             while(row.next())
             {
-                result.users.put(row.getInt("SUM(Seconds)"),row.getString("first_columnn"));
+                result.list.put(row.getInt("SUM(Seconds)"),row.getString("first_columnn"));
                 if(row.getInt("MAX(Data)") > result.max  || result.max == 0){
                     result.max = row.getInt("MAX(Data)");
                 }

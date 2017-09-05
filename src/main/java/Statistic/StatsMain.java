@@ -47,7 +47,7 @@ public class StatsMain {
         ResultDataBase base = dataBase.getTopChannels(currentGuild.getLongID());
         List<String> result = new ArrayList<>();
         int i = 1;
-        for(Map.Entry<Integer,String> entry : base.chans.entrySet())
+        for(Map.Entry<Integer,String> entry : base.list.entrySet())
         {
             StringBuilder row = new StringBuilder();
             row.append(i);
@@ -78,7 +78,7 @@ public class StatsMain {
         }
         List<String> result = new ArrayList<>();
         int i = 1;
-        for (Map.Entry<Integer, String> entry : base.users.entrySet()) {
+        for (Map.Entry<Integer, String> entry : base.list.entrySet()) {
             StringBuilder row = new StringBuilder();
             row.append(i);
             row.append(". ");

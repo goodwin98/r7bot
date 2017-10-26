@@ -5,6 +5,9 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -44,9 +47,26 @@ public class StatsMain {
        }
     }
 
-    public void displayTopChannels(IChannel channel)
+    public void displayTopChannels(IChannel channel, List<String> args)
     {
-        ResultDataBase base = dataBase.getTopChannels(currentGuild.getLongID());
+        int days = 0;
+        if(args.size() == 1 ) {
+            try {
+                days = Integer.parseUnsignedInt(args.get(0));
+            } catch (NumberFormatException e)
+            {
+                days = 0;
+            }
+        }
+        ResultDataBase base;
+        if(days != 0) {
+            ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
+            zdt = zdt.minusDays(days);
+            int minData = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
+            base = dataBase.getTopChannels(currentGuild.getLongID(),minData);
+        } else {
+            base = dataBase.getTopChannels(currentGuild.getLongID());
+        }
         List<String> result = new ArrayList<>();
         int i = 1;
         for(Map.Entry<Integer,String> entry : base.list.entrySet())

@@ -147,6 +147,15 @@ class DataBase {
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild)));
     }
 
+    ResultDataBase getTopChannels(long guild, int minData){
+
+        String sqlSelect = "SELECT ChanID AS first_columnn, SUM(Seconds), MIN(Data), MAX(Data) FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id WHERE Guild = %s AND Data > %d GROUP BY ChanID ORDER BY SUM(Seconds) DESC;";
+
+        return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), minData));
+    }
+
     ResultDataBase getTopUsersByChannel (long guild, String chan_to_top)
     {
         String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +

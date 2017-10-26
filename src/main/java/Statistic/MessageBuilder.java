@@ -18,6 +18,10 @@ class MessageBuilder {
             list.append(aNamesChan);
             list.append("\n");
         }
+        if(list.length() == 0)
+        {
+            list.append("пусто\n");
+        }
         builder.appendField("1 - " + String.valueOf(namesChan.size()),list.toString(), true);
 
         return builder.build();

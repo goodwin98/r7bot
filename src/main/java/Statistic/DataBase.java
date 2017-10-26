@@ -4,9 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.time.Clock;
-import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.TreeMap;
@@ -120,9 +119,7 @@ class DataBase {
 
         try {
             int userchan_id = getUserChan(us.getCurrentChan().getStringID(), guild, us.getUser().getStringID());
-            Clock clock = Clock.system(ZoneId.of("Europe/Moscow"));
-            LocalDate ld = LocalDate.now(clock);
-            int nowData = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(ld));
+            int nowData = formatDate(0);
             ResultSet row = statement.executeQuery(String.format(sqlSelect, nowData,userchan_id));
             if(!row.next())
             {
@@ -212,6 +209,13 @@ class DataBase {
             return result;
         }
         return result;
+    }
+
+    static int formatDate(int offsetDays)
+    {
+        ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
+        zdt = zdt.minusDays(offsetDays);
+        return Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
     }
 
 

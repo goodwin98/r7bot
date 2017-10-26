@@ -5,9 +5,6 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -60,9 +57,7 @@ public class StatsMain {
         }
         ResultDataBase base;
         if(days != 0) {
-            ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
-            zdt = zdt.minusDays(days);
-            int minData = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
+            int minData = DataBase.formatDate(days);
             base = dataBase.getTopChannels(currentGuild.getLongID(),minData);
         } else {
             base = dataBase.getTopChannels(currentGuild.getLongID());

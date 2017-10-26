@@ -168,6 +168,17 @@ class DataBase {
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild)));
 
     }
+    ResultDataBase getTopUsersByGuild(long guild, String AFKChannel)
+    {
+        String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = '%s' AND ChanId != '%s'" +
+                "GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 20;";
+
+        return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), AFKChannel));
+
+    }
 
     private ResultDataBase getTopSecondFromDB(String sqlSelect) {
 

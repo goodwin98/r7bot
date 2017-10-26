@@ -9,8 +9,8 @@ class Channel {
     private static final Logger log = LoggerFactory.getLogger(Channel.class);
     private String id;
     private boolean isLive = false;
-    private YouTubeVideo video;
     private int waitCount = 0;
+    private YouTubeVideo video;
 
     Channel(String id){
         this.id = id;

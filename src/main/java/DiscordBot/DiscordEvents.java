@@ -109,4 +109,5 @@ public class DiscordEvents {
             EventHelper.getStatByGuild(event.getGuild()).userJoin(event.getUser(), event.getNewChannel());
         }
     }
+
 }

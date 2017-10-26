@@ -31,11 +31,13 @@ public class StatsMain {
     }
     public void userJoin(IUser user, IVoiceChannel channel)
     {
-        users.put(user,new User(user,channel));
+        if(!users.containsKey(user) && user.getRolesForGuild(currentGuild).size() != 0) {
+            users.put(user, new User(user, channel));
+        }
     }
     public void userLeave(IUser user)
     {
-       if (users.containsKey(user))
+       if (users.containsKey(user) )
        {
            dataBase.saveTime(users.get(user),currentGuild.getLongID());
            users.remove(user);
@@ -74,7 +76,7 @@ public class StatsMain {
             }
             base = dataBase.getTopUsersByChannel(currentGuild.getLongID(), chanToTop.get(0));
         } else {
-            base = dataBase.getTopUsersByGuild(currentGuild.getLongID());
+            base = dataBase.getTopUsersByGuild(currentGuild.getLongID(), currentGuild.getAFKChannel().getStringID());
         }
         List<String> result = new ArrayList<>();
         int i = 1;

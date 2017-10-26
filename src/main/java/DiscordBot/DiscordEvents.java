@@ -59,7 +59,7 @@ public class DiscordEvents {
         if(event.getAuthor() != BotUtils.getClient().getUserByID(223528667874197504L) && !flag ) // bot's owner
             return;
 
-        String[] argArray = event.getMessage().getContent().split(" ");
+        String[] argArray = event.getMessage().getContent().split(" +");
 
 
         if(argArray.length == 0)

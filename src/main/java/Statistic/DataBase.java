@@ -164,6 +164,17 @@ class DataBase {
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), chan_to_top));
     }
 
+    ResultDataBase getTopUsersByChannel (long guild, String chan_to_top, int minDate)
+    {
+        String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = '%s' AND ChanId = '%s' AND Data > %d GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 40;";
+
+
+        return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), chan_to_top, minDate));
+    }
+
     ResultDataBase getTopUsersByGuild(long guild)
     {
         String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
@@ -183,6 +194,18 @@ class DataBase {
                 "GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 40;";
 
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), AFKChannel));
+
+    }
+
+    ResultDataBase getTopUsersByGuild(long guild, String AFKChannel, int minDate)
+    {
+        String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = '%s' AND ChanId != '%s' AND Data > %d " +
+                "GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 40;";
+
+        return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), AFKChannel, minDate));
 
     }
 

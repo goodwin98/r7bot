@@ -82,16 +82,29 @@ public class StatsMain {
         channel.sendMessage(MessageBuilder.topChannels(result,String.valueOf(base.min), String.valueOf(base.max)));
     }
 
-    public void displayTopUsersByChannels(IChannel channel, List<String> chanToTop)
+    public void displayTopUsersByChannels(IChannel channel, List<String> args)
     {
+        boolean byGuild = false;
         ResultDataBase base;
-        if(chanToTop.size() != 0) {
-            if (currentGuild.getVoiceChannelByID(Long.valueOf(chanToTop.get(0))) == null) {
+        if(args.size() == 1 && args.get(0).length() > 4) {
+            if (currentGuild.getVoiceChannelByID(Long.valueOf(args.get(0))) == null) {
                 return;
             }
-            base = dataBase.getTopUsersByChannel(currentGuild.getLongID(), chanToTop.get(0));
-        } else {
+            base = dataBase.getTopUsersByChannel(currentGuild.getLongID(), args.get(0));
+        } else if(args.size() == 2 && args.get(1).length() < 4) {
+            if (currentGuild.getVoiceChannelByID(Long.valueOf(args.get(0))) == null) {
+                return;
+            }
+            base = dataBase.getTopUsersByChannel(currentGuild.getLongID(), args.get(0), DataBase.formatDate(Integer.parseInt(args.get(1))));
+        } else if(args.size() == 1 && args.get(0).length() < 4) {
+            base = dataBase.getTopUsersByGuild(currentGuild.getLongID(), currentGuild.getAFKChannel().getStringID(),DataBase.formatDate(Integer.parseInt(args.get(0))));
+            byGuild = true;
+        } else if(args.size() == 0) {
             base = dataBase.getTopUsersByGuild(currentGuild.getLongID(), currentGuild.getAFKChannel().getStringID());
+            byGuild = true;
+
+        } else {
+            return;
         }
         List<String> result = new ArrayList<>();
         int i = 1;
@@ -108,8 +121,8 @@ public class StatsMain {
             result.add(row.toString());
             i++;
         }
-        if(chanToTop.size() != 0) {
-            channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getVoiceChannelByID(Long.valueOf(chanToTop.get(0))).getName(), String.valueOf(base.min), String.valueOf(base.max)));
+        if(!byGuild) {
+            channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getVoiceChannelByID(Long.valueOf(args.get(0))).getName(), String.valueOf(base.min), String.valueOf(base.max)));
         } else {
             channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getName(), String.valueOf(base.min), String.valueOf(base.max)));
         }

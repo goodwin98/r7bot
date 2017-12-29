@@ -68,4 +68,17 @@ class MessageBuilder {
 
         return builder.build();
     }
+
+    static EmbedObject statUser(String aTimeList, String rTimeList, String totalTime, String firstData, String lastData, String userName)
+    {
+        EmbedBuilder builder = new EmbedBuilder();
+        builder.withTitle("Статистика пользователя " + userName);
+        builder.withDescription("c " + firstData + " по "+ lastData);
+
+        builder.appendField("Общее время на каналах", totalTime,false);
+        builder.appendField("Любимые каналы за всё время", aTimeList, true);
+        builder.appendField("Недавние любимые каналы", rTimeList, true);
+
+        return builder.build();
+    }
 }

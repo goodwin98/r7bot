@@ -234,6 +234,56 @@ class DataBase {
         return result;
     }
 
+    ResultUserStat getUserStat(long guild, String AFKChannel, String userId)
+    {
+        String sqlSelectTotalTime = "SELECT UserID , ChanID, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = '%s' AND UserID = '%s' AND ChanID != '%s';";
+
+        String sqlSelectAllTime = "SELECT UserID , ChanID, SUM(Seconds)  FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = '%s' AND UserID = '%s' AND ChanID != '%s' GROUP BY ChanID ORDER BY SUM(Seconds) DESC LIMIT 5;";
+
+        String sqlSelectRecentTime = "SELECT UserID , ChanID, SUM(Seconds)  FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN " +
+                "channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = '%s' AND UserID = '%s' AND ChanID != '%s' AND Data > %d GROUP BY ChanID ORDER BY SUM(Seconds) DESC LIMIT 5;";
+
+        ResultUserStat result = new ResultUserStat();
+        result.allTimeList = new TreeMap<>(Collections.reverseOrder());
+        result.recentTimeList = new TreeMap<>(Collections.reverseOrder());
+
+        try {
+
+            ResultSet row = statement.executeQuery(String.format(sqlSelectTotalTime,Long.toString(guild),userId,AFKChannel));
+            if(row.next())
+            {
+                result.totalTime = row.getInt("SUM(Seconds)");
+                result.dateMin = row.getInt("MIN(Data)");
+                result.dateMax = row.getInt("MAX(Data)");
+            }
+            row = statement.executeQuery(String.format(sqlSelectAllTime,Long.toString(guild),userId,AFKChannel));
+            while(row.next())
+            {
+                result.allTimeList.put(row.getInt("SUM(Seconds)"), row.getString("ChanID"));
+            }
+
+            row = statement.executeQuery(String.format(sqlSelectRecentTime,Long.toString(guild),userId,AFKChannel, formatDate(30)));
+            while(row.next())
+            {
+                result.recentTimeList.put(row.getInt("SUM(Seconds)"), row.getString("ChanID"));
+            }
+
+        } catch (SQLException e) {
+            log.error("Error read database" ,e);
+            return result;
+        }
+        return result;
+
+    }
+
     static int formatDate(int offsetDays)
     {
         ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));

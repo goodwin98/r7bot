@@ -41,6 +41,8 @@ public class DiscordEvents {
 
         commandMap.put("top_users", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayTopUsersByChannels(event.getChannel(),args));
 
+        commandMap.put("user_stat", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayUserStats(event.getChannel(),args));
+
     }
 
     @EventSubscriber

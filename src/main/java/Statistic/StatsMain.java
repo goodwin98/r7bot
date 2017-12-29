@@ -128,6 +128,44 @@ public class StatsMain {
         }
 
     }
+    public void displayUserStats(IChannel channel, List<String> args)
+    {
+        ResultUserStat base = dataBase.getUserStat(currentGuild.getLongID(), currentGuild.getAFKChannel().getStringID(), args.get(0));
+
+        StringBuilder aTimeList = new StringBuilder();
+        StringBuilder rTimeList = new StringBuilder();
+        int i = 1;
+
+        for (Map.Entry<Integer, String> entry : base.allTimeList.entrySet()){
+
+            aTimeList.append(i);
+            aTimeList.append(". ");
+            if (currentGuild.getVoiceChannelByID(Long.valueOf(entry.getValue())) != null)
+                aTimeList.append(currentGuild.getVoiceChannelByID(Long.valueOf(entry.getValue())).getName());
+            else
+                aTimeList.append(Long.valueOf(entry.getValue()));
+            aTimeList.append("\t\t");
+            aTimeList.append(formatSeconds(entry.getKey()));
+            aTimeList.append("\n");
+            i++;
+        }
+        i = 1;
+        for (Map.Entry<Integer, String> entry : base.recentTimeList.entrySet()){
+            rTimeList.append(i);
+            rTimeList.append(". ");
+            if (currentGuild.getVoiceChannelByID(Long.valueOf(entry.getValue())) != null)
+                rTimeList.append(currentGuild.getVoiceChannelByID(Long.valueOf(entry.getValue())).getName());
+            else
+                rTimeList.append(Long.valueOf(entry.getValue()));
+            rTimeList.append("\t\t");
+            rTimeList.append(formatSeconds(entry.getKey()));
+            rTimeList.append("\n");
+            i++;
+        }
+
+        channel.sendMessage(MessageBuilder.statUser(aTimeList.toString(),rTimeList.toString(), formatSeconds(base.totalTime), Integer.toString(base.dateMin),
+                Integer.toString(base.dateMax),currentGuild.getUserByID(Long.valueOf(args.get(0))).getName()));
+    }
     private String formatSeconds (int seconds)
     {
         return String.format(

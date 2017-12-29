@@ -45,7 +45,7 @@ class YouTubeRequest {
             throw e;
         }
 
-        if (isLive(response.toString()) == false)
+        if (!isLive(response.toString()))
                 return new YouTubeVideo();
         return parse(response.toString());
 
@@ -66,8 +66,12 @@ class YouTubeRequest {
             JsonElement pageInfo = mainObject.get("pageInfo");
             JsonElement totalResults = pageInfo.getAsJsonObject().get("totalResults");
             if (totalResults.getAsInt() != 0) {
-                log.info("parse:true");
+                log.info("parse:true" + totalResults.toString());
                 return true;
+            }
+            else {
+                log.info("parse:false" + totalResults.toString());
+                return false;
             }
         }
         catch (Exception e){
@@ -75,7 +79,6 @@ class YouTubeRequest {
             throw e;
         }
 
-        log.info("parse:false");
-        return false;
+
     }
 }

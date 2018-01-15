@@ -8,6 +8,26 @@
         </encoder>
     </appender>
 
+    <appender name="FILEYOU"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>youtube_log.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>"%d{ISO8601} [%-5p][%-16.16t][%27.27c] - %m%n"
+            </Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <FileNamePattern>youtube_log.%i.log</FileNamePattern>
+            <MinIndex>1</MinIndex>
+            <MaxIndex>3</MaxIndex>
+        </rollingPolicy>
+
+        <triggeringPolicy
+                class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>5MB</MaxFileSize>
+        </triggeringPolicy>
+
+    </appender>
     <appender name="FILE"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>log.log</file>
@@ -29,10 +49,11 @@
 
     </appender>
     <logger name="YouTube" level="INFO">
-        <appender-ref ref="FILE" />
+        <appender-ref ref="FILEYOU" />
     </logger>
     <root level="DEBUG">
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
     </root>
 
 </configuration>

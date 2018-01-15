@@ -55,7 +55,8 @@ public class NotifyStream extends TimerTask {
     }
     private static void addDiscordChannel(IChannel chan)
     {
-        discordChannel.add(chan);
+        if(!discordChannel.contains(chan))
+            discordChannel.add(chan);
     }
     public void run()
     {

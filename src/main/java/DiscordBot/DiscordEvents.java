@@ -85,6 +85,7 @@ public class DiscordEvents {
     public void onGuildCreated(GuildCreateEvent event) { // create or join to guild
 
         EventHelper.addGuild(event.getGuild());
+        log.info("Guild " + event.getGuild().getName() + " created");
 
     }
 

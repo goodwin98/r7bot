@@ -71,6 +71,18 @@ class MessageBuilder {
 
     static EmbedObject statUser(String aTimeList, String rTimeList, String totalTime, String firstData, String lastData, String userName)
     {
+        if(aTimeList.length() == 0)
+            aTimeList = "Отстутствуют";
+        if(rTimeList.length() == 0)
+            rTimeList = "Отстутствуют";
+        if(totalTime.length() == 0)
+            totalTime = "n/a";
+        if( firstData.length() == 0)
+        {
+            firstData = "n/a";
+            lastData = "n/a";
+        }
+
         EmbedBuilder builder = new EmbedBuilder();
         builder.withTitle("Статистика пользователя " + userName);
         builder.withDescription("c " + firstData + " по "+ lastData);

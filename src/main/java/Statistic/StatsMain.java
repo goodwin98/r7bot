@@ -130,6 +130,11 @@ public class StatsMain {
     }
     public void displayUserStats(IChannel channel, List<String> args)
     {
+        if(currentGuild.getUserByID(Long.valueOf(args.get(0))) == null)
+        {
+            channel.sendMessage("Нет такого пользователя.");
+            return;
+        }
         ResultUserStat base = dataBase.getUserStat(currentGuild.getLongID(), currentGuild.getAFKChannel().getStringID(), args.get(0));
 
         StringBuilder aTimeList = new StringBuilder();

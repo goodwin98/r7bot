@@ -3,7 +3,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>"%d{HH:mm:ss.SSS} [%-5p][%-16.16t][%25.25c] - %m%n"
+            <Pattern>%d{HH:mm:ss} %-5p[%-16.16t][%25.25c] - %m%n
             </Pattern>
         </encoder>
     </appender>
@@ -12,7 +12,7 @@
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>youtube_log.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>"%d{ISO8601} [%-5p][%-16.16t][%27.27c] - %m%n"
+            <Pattern>%d{ISO8601} [%-5p][%-16.16t][%27.27c] - %m%n
             </Pattern>
         </encoder>
 
@@ -32,7 +32,7 @@
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>log.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>"%d{ISO8601} [%-5p][%-16.16t][%27.27c] - %m%n"
+            <Pattern>%d{ISO8601} [%-5p][%-16.16t][%27.27c] - %m%n
             </Pattern>
         </encoder>
 

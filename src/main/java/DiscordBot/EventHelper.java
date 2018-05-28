@@ -10,6 +10,8 @@ import sx.blah.discord.handle.obj.IGuild;
 import java.util.HashMap;
 
 class EventHelper {
+
+
     private static final Logger log = LoggerFactory.getLogger(EventHelper.class);
     private static NotifyStream notify;
     private static HashMap<IGuild, StatsMain> statsList = new HashMap<>();
@@ -28,4 +30,6 @@ class EventHelper {
         subscriber.addGuild(guild);
 
     }
+
+
 }

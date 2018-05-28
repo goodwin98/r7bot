@@ -6,8 +6,14 @@ import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class BotUtils {
     private static final Logger log = LoggerFactory.getLogger(BotUtils.class);
@@ -55,4 +61,12 @@ public class BotUtils {
     public static IDiscordClient getClient() {
         return cli;
     }
+
+    public static void sendLevelOfUser(IUser user, IMessage message, IChannel channel, IGuild guild)
+    {
+        ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
+
+        channel.sendMessage(user.getDisplayName(guild) + ", сегодня ты мне нравишься на " + ((user.getLongID() + zdt.getDayOfMonth()*user.getName().codePointAt(0)) % 101) + " процентов." );
+    }
+
 }

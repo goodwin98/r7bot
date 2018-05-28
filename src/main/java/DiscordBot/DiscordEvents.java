@@ -1,7 +1,6 @@
 package DiscordBot;
 
 import DiscordBot.Settings.Settings;
-import YouTube.NotifyStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sx.blah.discord.api.events.EventSubscriber;
@@ -10,17 +9,18 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelJoinEvent;
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelLeaveEvent;
 import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelMoveEvent;
-import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.handle.obj.Permissions;
 
 import java.util.*;
+
+
 
 public class DiscordEvents {
     private static final Logger log = LoggerFactory.getLogger(DiscordEvents.class);
 
     // A static map of commands mapping from command string to the functional impl
     private static Map<String, Command> commandMap = new HashMap<>();
-    private static NotifyStream notify;
+    private static Map<String, Command> commandMapFun = new HashMap<>();
+    //private static NotifyStream notify;
 
     // Statically populate the commandMap with the intended functionality
     // Might be better practise to do this from an instantiated objects constructor
@@ -33,9 +33,8 @@ public class DiscordEvents {
 
         commandMap.put("exit", (event, args) -> System.exit(0));
 
-        //commandMap.put("check", (event, args) -> notify = new NotifyStream(event.getChannel()));
 
-        commandMap.put("stop_notify", (event, args) -> notify.stop(event.getChannel()));
+        //commandMap.put("stop_notify", (event, args) -> notify.stop(event.getChannel()));
 
         commandMap.put("top_chans", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayTopChannels(event.getChannel(),args));
 
@@ -43,24 +42,17 @@ public class DiscordEvents {
 
         commandMap.put("user_stat", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayUserStats(event.getChannel(),args));
 
+
+        commandMapFun.put("level", (event, args) -> BotUtils.sendLevelOfUser(event.getAuthor(),event.getMessage(),event.getChannel(),event.getGuild()));
     }
 
     @EventSubscriber
     public void onMessageReceived(MessageReceivedEvent event){
 
 
-        boolean flag = false;
-        for (IRole role : event.getAuthor().getRolesForGuild(event.getGuild())) {
-            for (Permissions permissions : role.getPermissions()) {
-                if (permissions == Permissions.BAN) {
-                    flag = true;
-                    break;
-                }
-            }
-        }
-        if(event.getAuthor() != BotUtils.getClient().getUserByID(223528667874197504L) && !flag ) // bot's owner
+        int permission = Perm.getPermForUser(event.getAuthor(),event.getGuild());
+        if(permission == 0)
             return;
-
         String[] argArray = event.getMessage().getContent().split(" +");
 
 
@@ -76,9 +68,15 @@ public class DiscordEvents {
         List<String> argsList = new ArrayList<>(Arrays.asList(argArray));
         argsList.remove(0); // Remove the command
 
+        if((permission & Perm.ALL) != 0) {
+            if (commandMap.containsKey(commandStr))
+                commandMap.get(commandStr).runCommand(event, argsList);
+        }
+        if((permission & (Perm.FUN | Perm.ALL)) != 0) {
+            if (commandMapFun.containsKey(commandStr))
+                commandMapFun.get(commandStr).runCommand(event, argsList);
+        }
 
-        if(commandMap.containsKey(commandStr))
-            commandMap.get(commandStr).runCommand(event, argsList);
     }
 
     @EventSubscriber

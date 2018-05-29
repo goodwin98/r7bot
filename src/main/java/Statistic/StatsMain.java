@@ -29,6 +29,17 @@ public class StatsMain {
         }
 
     }
+
+    public void userSendMessage(IUser user, IChannel textChan, String message)
+    {
+        if(user.isBot())
+            return;
+        if(message.length() > 350 || message.length() < 15)
+            return;
+
+        int count = (message.split("[\\wа-яА-Я]{3,20}").length) / 3;
+        dataBase.saveTextStat(user.getLongID(),textChan.getGuild().getLongID(), textChan.getLongID(),count);
+    }
     public void userJoin(IUser user, IVoiceChannel channel)
     {
         if(!users.containsKey(user) && user.getRolesForGuild(currentGuild).size() != 0) {
@@ -39,7 +50,7 @@ public class StatsMain {
     {
        if (users.containsKey(user) )
        {
-           dataBase.saveTime(users.get(user),currentGuild.getLongID());
+           dataBase.saveVoiceStat(users.get(user),currentGuild.getLongID());
            users.remove(user);
        }
     }
@@ -84,10 +95,16 @@ public class StatsMain {
 
     public void displayTopUsersByChannels(IChannel channel, List<String> args)
     {
+
         boolean byGuild = false;
         ResultDataBase base;
         if(args.size() == 1 && args.get(0).length() > 4) {
             if (currentGuild.getVoiceChannelByID(Long.valueOf(args.get(0))) == null) {
+                if(currentGuild.getChannelByID(Long.valueOf(args.get(0))) == null) {
+
+                    return;
+                }
+                displayTopTextUsersByChannel(channel,args,0);
                 return;
             }
             base = dataBase.getTopUsersByChannel(currentGuild.getLongID(), args.get(0));
@@ -126,6 +143,31 @@ public class StatsMain {
         } else {
             channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getName(), String.valueOf(base.min), String.valueOf(base.max)));
         }
+
+    }
+
+    private void displayTopTextUsersByChannel(IChannel channel, List<String> args, int days) {
+
+        ResultDataBase base = dataBase.getTopUsersByChannel(currentGuild.getLongID(),args.get(0));
+
+        List<String> result = new ArrayList<>();
+        int i = 1;
+        for (Map.Entry<Integer, String> entry : base.list.entrySet()) {
+            StringBuilder row = new StringBuilder();
+            row.append(i);
+            row.append(". ");
+            if (currentGuild.getUserByID(Long.valueOf(entry.getValue())) != null)
+                row.append(currentGuild.getUserByID(Long.valueOf(entry.getValue())).getName());
+            else
+                row.append(Long.valueOf(entry.getValue()));
+            row.append("\t\t");
+            row.append(entry.getKey());
+            result.add(row.toString());
+            i++;
+        }
+
+        channel.sendMessage(MessageBuilder.topUserByChan(result, "#" + currentGuild.getChannelByID(Long.valueOf(args.get(0))).getName(), String.valueOf(base.min), String.valueOf(base.max)));
+
 
     }
     public void displayUserStats(IChannel channel, List<String> args)

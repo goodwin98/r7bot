@@ -49,10 +49,17 @@ public class DiscordEvents {
     @EventSubscriber
     public void onMessageReceived(MessageReceivedEvent event){
 
-
         int permission = Perm.getPermForUser(event.getAuthor(),event.getGuild());
         if(permission == 0)
             return;
+
+
+        if((permission & Perm.TO_STAT) != 0){
+            if(EventHelper.getStatByGuild(event.getGuild()) != null)
+                EventHelper.getStatByGuild(event.getGuild()).userSendMessage(event.getAuthor(),event.getChannel(),event.getMessage().getContent());
+        }
+
+
         String[] argArray = event.getMessage().getContent().split(" +");
 
 

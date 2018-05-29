@@ -16,6 +16,9 @@ class DataBase {
 
     private Statement statement;
     private Connection connection;
+    private static final int VOICE_CHAN = 0;
+    private static final int TEXT_CHAN = 1;
+
 
 
     DataBase(int serverID)
@@ -63,7 +66,8 @@ class DataBase {
                 "    id     INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "    ChanID STRING  UNIQUE" +
                 "                   NOT NULL," +
-                "    Guild  STRING NOT NULL" +
+                "    Guild  STRING NOT NULL," +
+                "    type  INTEGER NOT NULL" +
                 ");";
         String sqlCreateUserChan = "CREATE TABLE IF NOT EXISTS UserChan (" +
                 "    id      INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -83,26 +87,28 @@ class DataBase {
 
     }
 
-    private int getChannel(String channel, long guild) throws SQLException
+    private int getChannel(String channel, long guild, int typeChan) throws SQLException
     {
-        String sqlSelect = "SELECT id FROM channels WHERE ChanID = '%s';";
-        String sqlInsert = "INSERT INTO channels (ChanID, Guild) VALUES ('%s', '%s');";
+        String sqlSelect = "SELECT id FROM channels WHERE ChanID = '%s' AND type = " + typeChan + ";";
+        String sqlInsert = "INSERT INTO channels (ChanID, Guild, type) VALUES ('%s', '%s', %d);";
 
         ResultSet row = statement.executeQuery(String.format(sqlSelect,channel));
         if(!row.next())
         {
-            statement.executeUpdate(String.format(sqlInsert,channel,Long.toString(guild)));
+            statement.executeUpdate(String.format(sqlInsert,channel,Long.toString(guild), typeChan));
             row = statement.executeQuery(String.format(sqlSelect,channel));
         }
         return row.getInt("id");
 
     }
-    private int getUserChan(String channel, long guild, String UserID) throws SQLException {
+
+
+    private int getUserChan(String channel, long guild, String UserID, int typeChan) throws SQLException {
 
         String sqlSelect = "SELECT id FROM UserChan WHERE UserID = '%s' AND channel = %d;";
         String sqlInsert = "INSERT INTO UserChan (UserID, channel) VALUES ('%s',%d);";
 
-        int chan_id = getChannel(channel,guild);
+        int chan_id = getChannel(channel, guild, typeChan);
         ResultSet row = statement.executeQuery(String.format(sqlSelect,UserID,chan_id));
         if(!row.next())
         {
@@ -111,14 +117,14 @@ class DataBase {
         }
         return row.getInt("id");
     }
-    void saveTime (User us, long guild)
+    void saveVoiceStat(User us, long guild)
     {
         String sqlSelect = "SELECT id, Seconds FROM Stats WHERE Data = %d AND userchan = %d;";
         String sqlInsert = "INSERT INTO Stats (Data, userchan, Seconds) VALUES (%d, %d, %d);";
         String sqlUpdate = "UPDATE Stats SET Seconds = %d WHERE id = %d;";
 
         try {
-            int userchan_id = getUserChan(us.getCurrentChan().getStringID(), guild, us.getUser().getStringID());
+            int userchan_id = getUserChan(us.getCurrentChan().getStringID(), guild, us.getUser().getStringID(), VOICE_CHAN);
             int nowData = formatDate(0);
             ResultSet row = statement.executeQuery(String.format(sqlSelect, nowData,userchan_id));
             if(!row.next())
@@ -135,11 +141,36 @@ class DataBase {
             log.error("Error save to dataBase" ,e);
         }
     }
+
+    void saveTextStat(long userID, long guild, long channel, int countToAdd){
+
+        String sqlSelect = "SELECT id, Seconds FROM Stats WHERE Data = %d AND userchan = %d;";
+        String sqlInsert = "INSERT INTO Stats (Data, userchan, Seconds) VALUES (%d, %d, %d);";
+        String sqlUpdate = "UPDATE Stats SET Seconds = %d WHERE id = %d;";
+
+        try{
+            int userchan_id = getUserChan(Long.toString(channel), guild, Long.toString(userID), TEXT_CHAN);
+            int nowData = formatDate(0);
+            ResultSet row = statement.executeQuery(String.format(sqlSelect, nowData,userchan_id));
+            if(!row.next())
+            {
+                statement.executeUpdate(String.format(sqlInsert,nowData,userchan_id,countToAdd));
+            } else {
+                int oldSeconds = row.getInt("Seconds");
+                int oldId = row.getInt("id");
+                statement.executeUpdate(String.format(sqlUpdate,oldSeconds + countToAdd, oldId));
+
+            }
+
+        } catch (SQLException e) {
+            log.error("Error save to dataBase" ,e);
+        }
+    }
     ResultDataBase getTopChannels(long guild){
 
         String sqlSelect = "SELECT ChanID AS first_columnn, SUM(Seconds), MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
-                "channels ON UserChan.channel = channels.id WHERE Guild = %s GROUP BY ChanID ORDER BY SUM(Seconds) DESC;";
+                "channels ON UserChan.channel = channels.id WHERE Guild = %s AND channels.type = 0 GROUP BY ChanID ORDER BY SUM(Seconds) DESC;";
 
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild)));
     }
@@ -148,7 +179,7 @@ class DataBase {
 
         String sqlSelect = "SELECT ChanID AS first_columnn, SUM(Seconds), MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
-                "channels ON UserChan.channel = channels.id WHERE Guild = %s AND Data > %d GROUP BY ChanID ORDER BY SUM(Seconds) DESC;";
+                "channels ON UserChan.channel = channels.id WHERE Guild = %s AND Data > %d AND channels.type = 0 GROUP BY ChanID ORDER BY SUM(Seconds) DESC;";
 
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), minData));
     }
@@ -180,7 +211,7 @@ class DataBase {
         String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
                 "channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = '%s' GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 40;";
+                "WHERE Guild = '%s' AND channels.type = 0 GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 40;";
 
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild)));
 
@@ -190,7 +221,7 @@ class DataBase {
         String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
                 "channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = '%s' AND ChanId != '%s'" +
+                "WHERE Guild = '%s' AND ChanId != '%s' AND channels.type = 0 " +
                 "GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 40;";
 
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), AFKChannel));
@@ -202,12 +233,13 @@ class DataBase {
         String sqlSelect = "SELECT UserID AS first_columnn, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
                 "channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = '%s' AND ChanId != '%s' AND Data > %d " +
+                "WHERE Guild = '%s' AND ChanId != '%s' AND Data > %d AND channels.type = 0 " +
                 "GROUP BY UserID ORDER BY SUM(Seconds) DESC LIMIT 40;";
 
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild), AFKChannel, minDate));
 
     }
+
 
     private ResultDataBase getTopSecondFromDB(String sqlSelect) {
 
@@ -239,17 +271,17 @@ class DataBase {
         String sqlSelectTotalTime = "SELECT UserID , ChanID, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
                 "channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = '%s' AND UserID = '%s' AND ChanID != '%s';";
+                "WHERE Guild = '%s' AND UserID = '%s' AND channels.type = 0 AND  ChanID != '%s';";
 
         String sqlSelectAllTime = "SELECT UserID , ChanID, SUM(Seconds)  FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
                 "channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = '%s' AND UserID = '%s' AND ChanID != '%s' GROUP BY ChanID ORDER BY SUM(Seconds) DESC LIMIT 5;";
+                "WHERE Guild = '%s' AND UserID = '%s' AND channels.type = 0 AND ChanID != '%s' GROUP BY ChanID ORDER BY SUM(Seconds) DESC LIMIT 5;";
 
         String sqlSelectRecentTime = "SELECT UserID , ChanID, SUM(Seconds)  FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
                 "channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = '%s' AND UserID = '%s' AND ChanID != '%s' AND Data > %d GROUP BY ChanID ORDER BY SUM(Seconds) DESC LIMIT 5;";
+                "WHERE Guild = '%s' AND UserID = '%s' AND ChanID != '%s' AND channels.type = 0 AND Data > %d GROUP BY ChanID ORDER BY SUM(Seconds) DESC LIMIT 5;";
 
         ResultUserStat result = new ResultUserStat();
         result.allTimeList = new TreeMap<>(Collections.reverseOrder());

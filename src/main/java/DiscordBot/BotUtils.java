@@ -34,7 +34,7 @@ public class BotUtils {
     }
 
     // Helper functions to make certain aspects of the bot easier to use.
-    public static void sendMessage(IChannel channel, String message){
+    static void sendMessage(IChannel channel, String message){
 
         // This might look weird but it'll be explained in another page.
         RequestBuffer.request(() -> {
@@ -62,10 +62,14 @@ public class BotUtils {
         return cli;
     }
 
-    public static void sendLevelOfUser(IUser user, IMessage message, IChannel channel, IGuild guild)
+    static void sendLevelOfUser(IUser user, IMessage message, IChannel channel, IGuild guild)
     {
         ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
-
+        if(user.getLongID() == 212594918298877953L)
+        {
+            channel.sendMessage(user.getDisplayName(guild) + ", теперь, ты мне нравишься всегда, на все свои "  + ((user.getLongID() + zdt.getDayOfMonth()*user.getName().codePointAt(0)) % 101) + " процентов.");
+            return;
+        }
         channel.sendMessage(user.getDisplayName(guild) + ", сегодня ты мне нравишься на " + ((user.getLongID() + zdt.getDayOfMonth()*user.getName().codePointAt(0)) % 101) + " процентов." );
     }
 

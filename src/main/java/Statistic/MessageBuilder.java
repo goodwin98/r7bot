@@ -13,16 +13,27 @@ class MessageBuilder {
 
         builder.withTitle("Список самых популярных каналов.");
         builder.withDescription("c " + firstData + " по "+ lastData);
+        int count = 0;
+        int oldCount = 0;
         StringBuilder list = new StringBuilder();
         for (String aNamesChan : namesChan) {
+            list.append(count + 1);
+            list.append(". ");
             list.append(aNamesChan);
             list.append("\n");
+            count++;
+            if(count % 20 == 0)
+            {
+                builder.appendField(String.valueOf(oldCount + 1) + " - " + String.valueOf(count),list.toString(), true);
+                list.setLength(0);
+                oldCount = count;
+            }
         }
         if(list.length() == 0)
         {
             list.append("пусто\n");
         }
-        builder.appendField("1 - " + String.valueOf(namesChan.size()),list.toString(), true);
+        builder.appendField(String.valueOf(oldCount + 1) + " - " + String.valueOf(count),list.toString(), true);
 
         return builder.build();
     }
@@ -39,6 +50,8 @@ class MessageBuilder {
         StringBuilder list = new StringBuilder();
         for(String aNamesUser : namesUser)
         {
+            list.append(count + 1);
+            list.append(". ");
             list.append(aNamesUser);
             list.append("\n");
             count++;
@@ -54,17 +67,6 @@ class MessageBuilder {
             builder.appendField(String.valueOf(oldCount + 1) +" - " + String.valueOf(count), list.toString(), true);
         }
 
-
-/*
-        for(int i = 0; i > namesUser.size()/20; i++) {
-            StringBuilder list = new StringBuilder();
-            for (String aNamesUser : namesUser) {
-                list.append(aNamesUser);
-                list.append("\n");
-            }
-            builder.appendField("1 - " + String.valueOf(namesUser.size()), list.toString(), true);
-        }
-*/
 
         return builder.build();
     }

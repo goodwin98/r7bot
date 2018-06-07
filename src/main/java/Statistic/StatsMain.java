@@ -5,10 +5,10 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class StatsMain {
 
@@ -38,8 +38,11 @@ public class StatsMain {
             return;
 
         int count = (message.split("[\\wа-яА-Я]{3,20}").length) / 3;
-        dataBase.saveTextStat(user.getLongID(),textChan.getGuild().getLongID(), textChan.getLongID(),count);
+        if(count > 0) {
+            dataBase.saveTextStat(user.getLongID(), textChan.getGuild().getLongID(), textChan.getLongID(), count);
+        }
     }
+
     public void userJoin(IUser user, IVoiceChannel channel)
     {
         if(!users.containsKey(user) && user.getRolesForGuild(currentGuild).size() != 0) {
@@ -73,23 +76,19 @@ public class StatsMain {
         } else {
             base = dataBase.getTopChannels(currentGuild.getLongID());
         }
-        List<String> result = new ArrayList<>();
-        int i = 1;
-        for(Map.Entry<Integer,String> entry : base.list.entrySet())
-        {
-            StringBuilder row = new StringBuilder();
-            row.append(i);
-            row.append(". ");
-            if (currentGuild.getVoiceChannelByID(Long.valueOf(entry.getValue())) != null)
-                row.append(currentGuild.getVoiceChannelByID(Long.valueOf(entry.getValue())).getName());
-            else
-                row.append(Long.valueOf(entry.getValue()));
-            row.append("\t\t");
-            row.append(formatSeconds(entry.getKey()));
-            result.add(row.toString());
-            i++;
+        List<String> result= base.list.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).map((entry) -> {
 
-        }
+            StringBuilder row = new StringBuilder();
+            if (currentGuild.getVoiceChannelByID(Long.valueOf(entry.getKey())) != null)
+                row.append(currentGuild.getVoiceChannelByID(Long.valueOf(entry.getKey())).getName());
+            else
+                row.append(Long.valueOf(entry.getKey()));
+            row.append("\t\t");
+            row.append(formatSeconds(entry.getValue()));
+            return row.toString();
+
+        }).collect(Collectors.toList());
+
         channel.sendMessage(MessageBuilder.topChannels(result,String.valueOf(base.min), String.valueOf(base.max)));
     }
 
@@ -123,21 +122,18 @@ public class StatsMain {
         } else {
             return;
         }
-        List<String> result = new ArrayList<>();
-        int i = 1;
-        for (Map.Entry<Integer, String> entry : base.list.entrySet()) {
+        List<String> result= base.list.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).map((entry) -> {
+
             StringBuilder row = new StringBuilder();
-            row.append(i);
-            row.append(". ");
-            if (currentGuild.getUserByID(Long.valueOf(entry.getValue())) != null)
-                row.append(currentGuild.getUserByID(Long.valueOf(entry.getValue())).getName());
+            if (currentGuild.getUserByID(Long.valueOf(entry.getKey())) != null)
+                row.append(currentGuild.getUserByID(Long.valueOf(entry.getKey())).getName());
             else
-                row.append(Long.valueOf(entry.getValue()));
+                row.append(Long.valueOf(entry.getKey()));
             row.append("\t\t");
-            row.append(formatSeconds(entry.getKey()));
-            result.add(row.toString());
-            i++;
-        }
+            row.append(formatSeconds(entry.getValue()));
+            return row.toString();
+        }).collect(Collectors.toList());
+
         if(!byGuild) {
             channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getVoiceChannelByID(Long.valueOf(args.get(0))).getName(), String.valueOf(base.min), String.valueOf(base.max)));
         } else {
@@ -150,21 +146,20 @@ public class StatsMain {
 
         ResultDataBase base = dataBase.getTopUsersByChannel(currentGuild.getLongID(),args.get(0));
 
-        List<String> result = new ArrayList<>();
-        int i = 1;
-        for (Map.Entry<Integer, String> entry : base.list.entrySet()) {
+
+        List<String> result= base.list.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).map((entry) -> {
+
             StringBuilder row = new StringBuilder();
-            row.append(i);
-            row.append(". ");
-            if (currentGuild.getUserByID(Long.valueOf(entry.getValue())) != null)
-                row.append(currentGuild.getUserByID(Long.valueOf(entry.getValue())).getName());
+            if (currentGuild.getUserByID(Long.valueOf(entry.getKey())) != null)
+                row.append(currentGuild.getUserByID(Long.valueOf(entry.getKey())).getName());
             else
-                row.append(Long.valueOf(entry.getValue()));
+                row.append(Long.valueOf(entry.getKey()));
             row.append("\t\t");
-            row.append(entry.getKey());
-            result.add(row.toString());
-            i++;
-        }
+            row.append(entry.getValue());
+            row.append(" exp");
+            return row.toString();
+        }).collect(Collectors.toList());
+
 
         channel.sendMessage(MessageBuilder.topUserByChan(result, "#" + currentGuild.getChannelByID(Long.valueOf(args.get(0))).getName(), String.valueOf(base.min), String.valueOf(base.max)));
 

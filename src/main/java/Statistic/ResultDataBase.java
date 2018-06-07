@@ -3,7 +3,7 @@ package Statistic;
 import java.util.TreeMap;
 
 class ResultDataBase {
-    TreeMap<Integer,String> list;
+    TreeMap<String, Integer> list;
     int max;
     int min;
 }

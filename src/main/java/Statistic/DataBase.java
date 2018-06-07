@@ -251,7 +251,7 @@ class DataBase {
             ResultSet row = statement.executeQuery(sqlSelect);
             while(row.next())
             {
-                result.list.put(row.getInt("SUM(Seconds)"),row.getString("first_columnn"));
+                result.list.put(row.getString("first_columnn"), row.getInt("SUM(Seconds)"));
                 if(row.getInt("MAX(Data)") > result.max  || result.max == 0){
                     result.max = row.getInt("MAX(Data)");
                 }

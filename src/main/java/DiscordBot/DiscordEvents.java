@@ -46,6 +46,8 @@ public class DiscordEvents {
 
         commandMap.put("save_statistic",  (event, args) -> StatsMain.resetStat());
 
+        commandMap.put("top_games", (event, args) -> StatsMain.displayToGames(event.getChannel()));
+
         commandMapFun.put("level", (event, args) -> BotUtils.sendLevelOfUser(event.getAuthor(),event.getMessage(),event.getChannel(),event.getGuild()));
     }
 

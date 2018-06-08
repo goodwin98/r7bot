@@ -7,6 +7,7 @@ import java.sql.*;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 class DataBase {
@@ -192,6 +193,25 @@ class DataBase {
                 log.error("Error save to dataBase" ,e);
             }
         }
+    }
+    public List<String> getTopGames()
+    {
+        String sqlSelect = "select games.Game from statGames" +
+                " join games on statGames.Game = games.id join users on User = users.id " +
+                " group by statGames.Game order by sum(Seconds) desc LIMIT 20;";
+        List<String> result = new ArrayList<>();
+        try {
+            ResultSet row = statement.executeQuery(sqlSelect);
+
+            while (row.next())
+            {
+                result.add(row.getString("Game"));
+            }
+            return result;
+        } catch (SQLException e) {
+            log.error("Error read getTopGames from dataBase" ,e);
+        }
+        return result;
     }
 
     private static int formatDate(int offsetDays)

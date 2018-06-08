@@ -2,10 +2,8 @@ package Statistic.Presence;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IPresence;
-import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.handle.obj.StatusType;
+import sx.blah.discord.api.internal.json.objects.EmbedObject;
+import sx.blah.discord.handle.obj.*;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -64,11 +62,17 @@ public class StatsMain {
         {
             dataBase.savePresenceStat(entry.getValue());
             try {
-                if(entry.getKey().getPresence().getPlayingText().isPresent()) 
+                if(entry.getKey().getPresence().getPlayingText().isPresent())
                     users.replace(entry.getKey(), new User(entry.getKey(), entry.getKey().getPresence().getPlayingText().get()));
             } catch (Exception e) {
                 log.error("Error with saving stats");
             }
         }
+    }
+
+    public static void displayToGames(IChannel channel)
+    {
+        EmbedObject message = MessageBuilder.topGames(channel,dataBase.getTopGames());
+        channel.sendMessage(message);
     }
 }

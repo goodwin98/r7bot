@@ -19,7 +19,7 @@ public class StatsMain {
     public StatsMain(IGuild guild){
 
         currentGuild = guild;
-        dataBase = new DataBase(guild.hashCode());
+        dataBase = new DataBase();
         for(IVoiceChannel voiceChannel : guild.getVoiceChannels())
         {
             for (IUser iUser:voiceChannel.getConnectedUsers())
@@ -66,7 +66,7 @@ public class StatsMain {
                 days = Integer.parseUnsignedInt(args.get(0));
             } catch (NumberFormatException e)
             {
-                days = 0;
+                //days = 0;
             }
         }
         ResultDataBase base;

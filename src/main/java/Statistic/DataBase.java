@@ -21,7 +21,7 @@ class DataBase {
 
 
 
-    DataBase(int serverID)
+    DataBase()
     {
         statement = ConnectDB();
         //TODO исключение при создании БД
@@ -44,7 +44,6 @@ class DataBase {
             connection = DriverManager.getConnection("jdbc:sqlite:statistics.db");
             statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
-
 
         }
         catch (SQLException e)
@@ -142,7 +141,8 @@ class DataBase {
         }
     }
 
-    void saveTextStat(long userID, long guild, long channel, int countToAdd){
+    void saveTextStat(long userID, long guild, long channel, int countToAdd)
+    {
 
         String sqlSelect = "SELECT id, Seconds FROM Stats WHERE Data = %d AND userchan = %d;";
         String sqlInsert = "INSERT INTO Stats (Data, userchan, Seconds) VALUES (%d, %d, %d);";
@@ -166,7 +166,8 @@ class DataBase {
             log.error("Error save to dataBase" ,e);
         }
     }
-    ResultDataBase getTopChannels(long guild){
+    ResultDataBase getTopChannels(long guild)
+    {
 
         String sqlSelect = "SELECT ChanID AS first_columnn, SUM(Seconds), MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +
@@ -175,7 +176,8 @@ class DataBase {
         return getTopSecondFromDB(String.format(sqlSelect, Long.toString(guild)));
     }
 
-    ResultDataBase getTopChannels(long guild, int minData){
+    ResultDataBase getTopChannels(long guild, int minData)
+    {
 
         String sqlSelect = "SELECT ChanID AS first_columnn, SUM(Seconds), MIN(Data), MAX(Data) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN " +

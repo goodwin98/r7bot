@@ -48,7 +48,7 @@ public class DiscordEvents {
 
         commandMap.put("top_games", (event, args) -> StatsMain.displayToGames(event.getChannel()));
 
-        commandMapFun.put("level", (event, args) -> BotUtils.sendLevelOfUser(event.getAuthor(),event.getMessage(),event.getChannel(),event.getGuild()));
+        commandMapFun.put("level", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayYesterdayExp(event.getAuthor(),event.getGuild(),event.getChannel()));
     }
 
     @EventSubscriber

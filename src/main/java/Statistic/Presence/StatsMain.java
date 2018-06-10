@@ -75,4 +75,9 @@ public class StatsMain {
         EmbedObject message = MessageBuilder.topGames(channel,dataBase.getTopGames());
         channel.sendMessage(message);
     }
+
+    public static int getLastOnlineDate(long user)
+    {
+        return dataBase.getLastDateOnline(user);
+    }
 }

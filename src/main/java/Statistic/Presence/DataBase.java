@@ -194,6 +194,26 @@ class DataBase {
             }
         }
     }
+    int getLastDateOnline(long user)
+    {
+        int date = 0;
+        String sqlSelect = "select LastOnLineData from users where UserID = ?;";
+        try {
+            PreparedStatement smt = connection.prepareStatement(sqlSelect);
+            smt.setString(1, Long.toString(user));
+            ResultSet row = smt.executeQuery();
+            if(row.next())
+            {
+                date = row.getInt("LastOnLineData");
+            }
+
+        } catch (SQLException e)
+        {
+            log.error("Error read get last date from dataBase" ,e);
+        }
+
+        return date;
+    }
     public List<String> getTopGames()
     {
         String sqlSelect = "select games.Game from statGames" +

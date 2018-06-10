@@ -268,6 +268,31 @@ class DataBase {
         return result;
     }
 
+    int getUserExpByGuild(long user, long guild, int firstDate, int lastDate)
+    {
+        String sqlSelect = "SELECT SUM(Seconds) FROM Stats JOIN " +
+                "UserChan ON Stats.userchan = UserChan.id JOIN channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = ? AND UserID = ? and type = 1 AND Data <= ? AND Data >= ?;";
+        PreparedStatement stmt;
+        int exp = 0;
+        try {
+            stmt = connection.prepareStatement(sqlSelect);
+            stmt.setString(1,Long.toString(guild));
+            stmt.setString(2,Long.toString(user));
+            stmt.setInt(3,firstDate);
+            stmt.setInt(4,lastDate);
+            ResultSet row = stmt.executeQuery();
+            if(row.next())
+            {
+                exp = row.getInt("SUM(Seconds)");
+            }
+
+        } catch (SQLException e)
+        {
+            log.error("Error read database" ,e);
+        }
+        return exp;
+    }
     ResultUserStat getUserStat(long guild, String AFKChannel, String userId)
     {
         String sqlSelectTotalTime = "SELECT UserID , ChanID, SUM(Seconds),  MIN(Data), MAX(Data) FROM Stats JOIN " +

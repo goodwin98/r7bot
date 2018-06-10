@@ -5,6 +5,9 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +40,7 @@ public class StatsMain {
         if(message.length() > 350 || message.length() < 15)
             return;
 
+        message = message.replaceAll("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]" , " ");
         int count = (message.split("[\\wа-яА-Я]{3,20}").length) / 3;
         if(count > 0) {
             dataBase.saveTextStat(user.getLongID(), textChan.getGuild().getLongID(), textChan.getLongID(), count);
@@ -167,7 +171,8 @@ public class StatsMain {
     }
     public void displayUserStats(IChannel channel, List<String> args)
     {
-        if(currentGuild.getUserByID(Long.valueOf(args.get(0))) == null)
+        long userId = Long.valueOf(args.get(0));
+        if(currentGuild.getUserByID(userId) == null)
         {
             channel.sendMessage("Нет такого пользователя.");
             return;
@@ -204,9 +209,33 @@ public class StatsMain {
             rTimeList.append("\n");
             i++;
         }
-
+        int date = Statistic.Presence.StatsMain.getLastOnlineDate(userId);
         channel.sendMessage(MessageBuilder.statUser(aTimeList.toString(),rTimeList.toString(), formatSeconds(base.totalTime), Integer.toString(base.dateMin),
-                Integer.toString(base.dateMax),currentGuild.getUserByID(Long.valueOf(args.get(0))).getName()));
+                Integer.toString(base.dateMax),currentGuild.getUserByID(userId).getName(), date));
+    }
+
+    public void displayYesterdayExp(IUser iUser, IGuild iGuild, IChannel iChannel)
+    {
+        ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
+        zdt = zdt.minusDays(1);
+        int firstDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
+        int lastDate = firstDate;
+
+        int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,lastDate);
+        iChannel.sendMessage(iUser.getDisplayName(iGuild) + ", вчера твоя карма пополнилась на " +
+                 exp + " " + rightWord(exp%10) + " опыта");
+    }
+    private String rightWord(int lastNum){
+        if(lastNum == 1)
+        {
+            return "очко";
+        } else if (lastNum >= 2 && lastNum <= 4)
+        {
+            return "очка";
+        } else
+        {
+            return "очков";
+        }
     }
     private String formatSeconds (int seconds)
     {

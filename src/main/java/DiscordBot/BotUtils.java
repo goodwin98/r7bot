@@ -69,8 +69,13 @@ public class BotUtils {
         {
             channel.sendMessage(user.getDisplayName(guild) + ", теперь, ты мне нравишься всегда, на все свои "  + ((user.getLongID() + zdt.getDayOfMonth()*user.getName().codePointAt(0)) % 101) + " процентов.");
             return;
+        } else if (user.getLongID() == 169755338025861122L)
+        {
+            channel.sendMessage(user.getDisplayName(guild) + ", славься, о богоподобный!");
+            return;
         }
-        channel.sendMessage(user.getDisplayName(guild) + ", сегодня ты мне нравишься на " + ((user.getLongID() + zdt.getDayOfMonth()*user.getName().codePointAt(0)) % 101) + " процентов." );
+
+        channel.sendMessage(user.getDisplayName(guild) + ", твой писюн сегодня вырос на " + ((user.getLongID()/2 + zdt.getDayOfMonth()*user.getName().codePointAt(0)) % 695-20) + " милиметров." );
     }
 
 }

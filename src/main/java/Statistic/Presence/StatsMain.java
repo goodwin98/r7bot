@@ -18,7 +18,9 @@ public class StatsMain {
 
     public static void updateUserPresence(IUser user, IPresence presence)
     {
-        if(presence.getPlayingText().isPresent()){
+        if(user.isBot())
+            return;
+        if(presence.getPlayingText().isPresent() && !presence.getStreamingUrl().isPresent()){
             if(!users.containsKey(user))
             {
                 users.put(user, new User(user,presence.getPlayingText().get()));
@@ -41,7 +43,7 @@ public class StatsMain {
     {
         List<Long> listUsers = new ArrayList<>();
             for (IUser iuser : guild.getUsers()) {
-                if (!iuser.isBot() && iuser.getPresence().getStatus() != StatusType.OFFLINE) {
+                if (!iuser.isBot() && iuser.getPresence().getStatus() != StatusType.OFFLINE && !iuser.getPresence().getStreamingUrl().isPresent()) {
                     if(iuser.getPresence().getPlayingText().isPresent() && !users.containsKey(iuser))
                     {
                         users.put(iuser, new User(iuser,iuser.getPresence().getPlayingText().get()));
@@ -57,6 +59,7 @@ public class StatsMain {
 
     public static void resetStat()
     {
+        log.info("Start saving all stats to database");
         Hashtable<IUser,User> users_copy = users;
         for(Map.Entry<IUser,User> entry : users_copy.entrySet())
         {

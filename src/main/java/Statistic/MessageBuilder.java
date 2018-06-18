@@ -71,7 +71,7 @@ class MessageBuilder {
         return builder.build();
     }
 
-    static EmbedObject statUser(String aTimeList, String rTimeList, String totalTime, String firstData, String lastData, String userName, int lastOnline)
+    static EmbedObject statUser(String aTimeList, String rTimeList, String totalTime, String firstData, String lastData, String userName, String lastOnline)
     {
         if(aTimeList.length() == 0)
             aTimeList = "Отсутствуют";
@@ -92,7 +92,7 @@ class MessageBuilder {
         builder.appendField("Общее время на каналах", totalTime,false);
         builder.appendField("Любимые каналы за всё время", aTimeList, true);
         builder.appendField("Недавние любимые каналы", rTimeList, true);
-        builder.appendField("В последний раз был в сети:",(lastOnline == 0 ? "непонятно" : Integer.toString(lastOnline)),true);
+        builder.appendField("В последний раз был в сети:",(lastOnline.length() == 0 ? "непонятно" : lastOnline),true);
 
         return builder.build();
     }

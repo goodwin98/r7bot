@@ -15,7 +15,7 @@ class DataBase {
     private static final Logger log = LoggerFactory.getLogger(DataBase.class);
 
     private Statement statement;
-    private Connection connection;
+    private static Connection connection = null;
     private static final int VOICE_CHAN = 0;
     private static final int TEXT_CHAN = 1;
 
@@ -36,12 +36,13 @@ class DataBase {
 
     private Statement ConnectDB()
     {
-        connection = null;
         Statement statement = null;
         try {
             Class.forName("org.sqlite.JDBC");
 
-            connection = DriverManager.getConnection("jdbc:sqlite:statistics.db");
+            if(connection == null) {
+                connection = DriverManager.getConnection("jdbc:sqlite:statistics.db");
+            }
             statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
 

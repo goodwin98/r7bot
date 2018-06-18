@@ -5,9 +5,11 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +95,7 @@ public class StatsMain {
 
         }).collect(Collectors.toList());
 
-        channel.sendMessage(MessageBuilder.topChannels(result,String.valueOf(base.min), String.valueOf(base.max)));
+        channel.sendMessage(MessageBuilder.topChannels(result,toStringFromDate(base.min), toStringFromDate(base.max)));
     }
 
     public void displayTopUsersByChannels(IChannel channel, List<String> args)
@@ -139,9 +141,9 @@ public class StatsMain {
         }).collect(Collectors.toList());
 
         if(!byGuild) {
-            channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getVoiceChannelByID(Long.valueOf(args.get(0))).getName(), String.valueOf(base.min), String.valueOf(base.max)));
+            channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getVoiceChannelByID(Long.valueOf(args.get(0))).getName(), toStringFromDate(base.min), toStringFromDate(base.max)));
         } else {
-            channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getName(), String.valueOf(base.min), String.valueOf(base.max)));
+            channel.sendMessage(MessageBuilder.topUserByChan(result, currentGuild.getName(), toStringFromDate(base.min), toStringFromDate(base.max)));
         }
 
     }
@@ -165,7 +167,7 @@ public class StatsMain {
         }).collect(Collectors.toList());
 
 
-        channel.sendMessage(MessageBuilder.topUserByChan(result, "#" + currentGuild.getChannelByID(Long.valueOf(args.get(0))).getName(), String.valueOf(base.min), String.valueOf(base.max)));
+        channel.sendMessage(MessageBuilder.topUserByChan(result, "#" + currentGuild.getChannelByID(Long.valueOf(args.get(0))).getName(), toStringFromDate(base.min), toStringFromDate(base.max)));
 
 
     }
@@ -209,9 +211,9 @@ public class StatsMain {
             rTimeList.append("\n");
             i++;
         }
-        int date = Statistic.Presence.StatsMain.getLastOnlineDate(userId);
-        channel.sendMessage(MessageBuilder.statUser(aTimeList.toString(),rTimeList.toString(), formatSeconds(base.totalTime), Integer.toString(base.dateMin),
-                Integer.toString(base.dateMax),currentGuild.getUserByID(userId).getName(), date));
+        int lastOnlineDatedate = Statistic.Presence.StatsMain.getLastOnlineDate(userId);
+        channel.sendMessage(MessageBuilder.statUser(aTimeList.toString(),rTimeList.toString(), formatSeconds(base.totalTime), toStringFromDate(base.dateMin),
+                toStringFromDate(base.dateMax),currentGuild.getUserByID(userId).getName(), toStringFromDate(lastOnlineDatedate)));
     }
 
     public void displayYesterdayExp(IUser iUser, IGuild iGuild, IChannel iChannel)
@@ -219,10 +221,14 @@ public class StatsMain {
         ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
         zdt = zdt.minusDays(1);
         int firstDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
-        int lastDate = firstDate;
 
-        int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,lastDate);
-        iChannel.sendMessage(iUser.getDisplayName(iGuild) + ", вчера твоя карма пополнилась на " +
+        int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,firstDate);
+        String greatMess = ", вчера твоя карма пополнилась на ";
+        if(iGuild.getLongID() == 349648434266898453L) // для туриста
+        {
+            greatMess = ", твое уважение к Амычу вчера увеличилось на ";
+        }
+        iChannel.sendMessage(iUser.getDisplayName(iGuild) + greatMess +
                  exp + " " + rightWord(exp%10) + " опыта");
     }
     private String rightWord(int lastNum){
@@ -244,5 +250,19 @@ public class StatsMain {
                 seconds / 3600,
                 (seconds % 3600) / 60,
                 seconds % 60);
+    }
+
+    private static String toStringFromDate(int date)
+    {
+        try {
+            String pattern = "yyyyMMdd";
+            DateTimeFormatter parser = DateTimeFormatter.ofPattern(pattern);
+            parser.withZone(ZoneId.of("Europe/Moscow"));
+            LocalDate dat = LocalDate.parse(Integer.toString(date), parser);
+            return DateTimeFormatter.ofPattern("dd.MM.yyyy").format(dat);
+        } catch (DateTimeParseException e)
+        {
+            return "";
+        }
     }
 }

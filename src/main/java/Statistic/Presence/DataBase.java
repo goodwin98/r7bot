@@ -14,7 +14,7 @@ class DataBase {
     private static final Logger log = LoggerFactory.getLogger(Statistic.Presence.DataBase.class);
 
     private Statement statement;
-    private Connection connection;
+    private static Connection connection = null;
 
 
     DataBase()
@@ -32,12 +32,13 @@ class DataBase {
 
     private Statement ConnectDB()
     {
-        connection = null;
         Statement statement = null;
         try {
             Class.forName("org.sqlite.JDBC");
 
-            connection = DriverManager.getConnection("jdbc:sqlite:statistics_pres.db");
+            if(connection == null) {
+                connection = DriverManager.getConnection("jdbc:sqlite:statistics_pres.db");
+            }
             statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
@@ -214,7 +215,7 @@ class DataBase {
 
         return date;
     }
-    public List<String> getTopGames()
+    List<String> getTopGames()
     {
         String sqlSelect = "select games.Game from statGames" +
                 " join games on statGames.Game = games.id join users on User = users.id " +

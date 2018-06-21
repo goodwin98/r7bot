@@ -83,4 +83,9 @@ public class StatsMain {
     {
         return dataBase.getLastDateOnline(user);
     }
+
+    public static GameTime getGameTimeByUser(long user, int firstDate, int lastDate)
+    {
+        return dataBase.getGameTimeForUser(user,firstDate,lastDate);
+    }
 }

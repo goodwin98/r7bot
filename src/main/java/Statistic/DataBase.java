@@ -273,7 +273,7 @@ class DataBase {
     {
         String sqlSelect = "SELECT SUM(Seconds) FROM Stats JOIN " +
                 "UserChan ON Stats.userchan = UserChan.id JOIN channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = ? AND UserID = ? and type = 1 AND Data <= ? AND Data >= ?;";
+                "WHERE Guild = ? AND UserID = ? and type = 1 AND Data >= ? AND Data <= ?;";
         PreparedStatement stmt;
         int exp = 0;
         try {

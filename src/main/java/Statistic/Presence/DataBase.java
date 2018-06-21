@@ -235,6 +235,30 @@ class DataBase {
         return result;
     }
 
+    GameTime getGameTimeForUser(long user, int firstDate, int lastDate)
+    {
+        String sqlSelect = "select SUM(Seconds), games.Game from statGames join games on statGames.Game = games.id join users on User = users.id\n" +
+                "where UserID = ? and Date >= ? and Date <= ? group by games.Game ORDER BY SUM(Seconds) DESC ;";
+        GameTime result = new GameTime();
+        result.time = 0;
+        try {
+            PreparedStatement smt = connection.prepareStatement(sqlSelect);
+            smt.setString(1, Long.toString(user));
+            smt.setInt(2,firstDate);
+            smt.setInt(3,lastDate);
+            ResultSet row = smt.executeQuery();
+            if(row.next())
+            {
+                result.time = row.getInt("SUM(Seconds)");
+                result.gameName = row.getString("Game");
+            }
+        } catch (SQLException e)
+        {
+            log.error("Error read getGameTimeForUser from dataBase" ,e);
+        }
+        return result;
+    }
+
     private static int formatDate(int offsetDays)
     {
         ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));

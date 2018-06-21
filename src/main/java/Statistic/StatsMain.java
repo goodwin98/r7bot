@@ -1,5 +1,6 @@
 package Statistic;
 
+import Statistic.Presence.GameTime;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
@@ -223,19 +224,64 @@ public class StatsMain {
         int firstDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
 
         int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,firstDate);
-        String greatMess = ", вчера твоя карма пополнилась на ";
+        GameTime gameTime = Statistic.Presence.StatsMain.getGameTimeByUser(iUser.getLongID(),firstDate,firstDate );
+        String greatMess = ", вчера твоя карма пополнилась всего лишь на ";
         if(iGuild.getLongID() == 349648434266898453L) // для туриста
         {
             greatMess = ", твое уважение к Амычу вчера увеличилось на ";
         }
-        iChannel.sendMessage(iUser.getDisplayName(iGuild) + greatMess +
-                 exp + " " + rightWord(exp%10) + " опыта");
+        if(gameTime.time == 0) {
+            iChannel.sendMessage(iUser.getDisplayName(iGuild) + greatMess +
+                    exp + " " + rightWord(exp) + " опыта");
+        } else {
+            iChannel.sendMessage(iUser.getDisplayName(iGuild) + greatMess +
+                    exp + " " + rightWord(exp) + " опыта, но зато ты провел " +rightTime(gameTime.time) + " за игрой в " + gameTime.gameName);
+        }
     }
-    private String rightWord(int lastNum){
-        if(lastNum == 1)
+
+    private String rightTime(int seconds)
+    {
+        if(seconds < 90)
+        {
+            if(seconds%10 == 1 && (seconds > 20 || seconds < 10))
+            {
+                return seconds + " секунду";
+            } else if ((seconds%10 >= 2 && seconds%10 <= 4) && (seconds > 20 || seconds < 10))
+            {
+                return seconds + " секунды";
+            } else
+            {
+                return seconds + " секунд";
+            }
+        } else if (seconds < 6000) {
+            if((seconds/60)%10 == 1 && (seconds/60 > 20 || seconds/60 < 10))
+            {
+                return seconds/60 + " минуту";
+            } else if (((seconds/60)%10 >= 2 && (seconds/60)%10 <= 4) && (seconds/60 > 20 || seconds/60 < 10))
+            {
+                return seconds/60 + " минуты";
+            } else
+            {
+                return seconds/60 + " минут";
+            }
+        } else {
+            if((seconds/3600)%10 == 1 && (seconds/3600 > 20 || seconds/3600 < 10))
+            {
+                return seconds/3600 + " час";
+            } else if (((seconds/3600)%10 >= 2 && (seconds/3600)%10 <= 4) && (seconds/3600 > 20 || seconds/3600 < 10))
+            {
+                return seconds/3600 + " часа";
+            } else
+            {
+                return seconds/3600 + " часов";
+            }
+        }
+    }
+    private String rightWord(int num){
+        if(num%10 == 1 && (num > 20 || num < 10))
         {
             return "очко";
-        } else if (lastNum >= 2 && lastNum <= 4)
+        } else if ((num%10 >= 2 && num%10 <= 4) && (num > 20 || num < 10))
         {
             return "очка";
         } else

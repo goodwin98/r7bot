@@ -223,6 +223,8 @@ public class StatsMain {
         zdt = zdt.minusDays(1);
         int firstDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
 
+        Statistic.Presence.StatsMain.resetStat(iUser); // TODO сохранять всю статистику по будильнику, а не на каждую команду
+
         int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,firstDate);
         GameTime gameTime = Statistic.Presence.StatsMain.getGameTimeByUser(iUser.getLongID(),firstDate,firstDate );
         String greatMess = ", вчера твоя карма пополнилась всего лишь на ";

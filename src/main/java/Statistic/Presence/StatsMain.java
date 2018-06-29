@@ -60,7 +60,7 @@ public class StatsMain {
     public static void resetStat()
     {
         log.info("Start saving all stats to database");
-        Hashtable<IUser,User> users_copy = users;
+        Hashtable<IUser,User> users_copy = new Hashtable<IUser,User>(users);
         for(Map.Entry<IUser,User> entry : users_copy.entrySet())
         {
             dataBase.savePresenceStat(entry.getValue());
@@ -70,6 +70,15 @@ public class StatsMain {
             } catch (Exception e) {
                 log.error("Error with saving stats");
             }
+        }
+    }
+
+    public static void resetStat(IUser iUser)
+    {
+        if(users.containsKey(iUser))
+        {
+            dataBase.savePresenceStat(users.get(iUser));
+            users.get(iUser).resetTime();
         }
     }
 

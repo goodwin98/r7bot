@@ -29,4 +29,8 @@ class User {
         return currentGame;
     }
 
+    void resetTime()
+    {
+        firstTime = System.currentTimeMillis();
+    }
 }

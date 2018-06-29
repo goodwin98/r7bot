@@ -22,6 +22,8 @@ public class DiscordEvents {
     // A static map of commands mapping from command string to the functional impl
     private static Map<String, Command> commandMap = new HashMap<>();
     private static Map<String, Command> commandMapFun = new HashMap<>();
+
+    
     //private static NotifyStream notify;
 
     // Statically populate the commandMap with the intended functionality

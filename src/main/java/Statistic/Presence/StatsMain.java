@@ -20,13 +20,13 @@ public class StatsMain {
     {
         if(user.isBot())
             return;
-        if(presence.getPlayingText().isPresent() && !presence.getStreamingUrl().isPresent()){
+        if(presence.getText().isPresent() && presence.getActivity().isPresent() && presence.getActivity().get() == ActivityType.PLAYING){
             if(!users.containsKey(user))
             {
-                users.put(user, new User(user,presence.getPlayingText().get()));
+                users.put(user, new User(user,presence.getText().get()));
             } else {
                 dataBase.savePresenceStat(users.get(user));
-                users.replace(user,new User(user,presence.getPlayingText().get()));
+                users.replace(user,new User(user,presence.getText().get()));
             }
         } else {
             if (users.containsKey(user))
@@ -44,9 +44,9 @@ public class StatsMain {
         List<Long> listUsers = new ArrayList<>();
             for (IUser iuser : guild.getUsers()) {
                 if (!iuser.isBot() && iuser.getPresence().getStatus() != StatusType.OFFLINE && !iuser.getPresence().getStreamingUrl().isPresent()) {
-                    if(iuser.getPresence().getPlayingText().isPresent() && !users.containsKey(iuser))
+                    if(iuser.getPresence().getText().isPresent() && !users.containsKey(iuser))
                     {
-                        users.put(iuser, new User(iuser,iuser.getPresence().getPlayingText().get()));
+                        users.put(iuser, new User(iuser,iuser.getPresence().getText().get()));
                     } else {
                         //dataBase.updateUserLastDate(iuser.getLongID());
                         listUsers.add(iuser.getLongID());
@@ -60,17 +60,19 @@ public class StatsMain {
     public static void resetStat()
     {
         log.info("Start saving all stats to database");
-        Hashtable<IUser,User> users_copy = new Hashtable<IUser,User>(users);
+        Hashtable<IUser,User> users_copy = new Hashtable<>(users);
         for(Map.Entry<IUser,User> entry : users_copy.entrySet())
         {
             dataBase.savePresenceStat(entry.getValue());
             try {
-                if(entry.getKey().getPresence().getPlayingText().isPresent())
-                    users.replace(entry.getKey(), new User(entry.getKey(), entry.getKey().getPresence().getPlayingText().get()));
+
+                users.get(entry.getKey()).resetTime();
+
             } catch (Exception e) {
-                log.error("Error with saving stats");
+                log.error("Error with saving all stats");
             }
         }
+        log.info("Finish saving all stats to database");
     }
 
     public static void resetStat(IUser iUser)

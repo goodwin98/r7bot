@@ -125,7 +125,7 @@ class DataBase {
                 singleSavePresence(user);
                 connection.commit();
             }  catch (SQLException e) {
-                log.error("Error save to dataBase" ,e);
+                log.error("Error save to dataBase - rollback" ,e);
                 connection.rollback();
             } finally {
                 connection.setAutoCommit(true);

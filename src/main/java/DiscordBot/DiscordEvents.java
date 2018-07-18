@@ -15,15 +15,13 @@ import sx.blah.discord.handle.impl.events.user.PresenceUpdateEvent;
 import java.util.*;
 
 
-
 public class DiscordEvents {
     private static final Logger log = LoggerFactory.getLogger(DiscordEvents.class);
 
     // A static map of commands mapping from command string to the functional impl
     private static Map<String, Command> commandMap = new HashMap<>();
     private static Map<String, Command> commandMapFun = new HashMap<>();
-
-    
+    private static Runnable dailyTask;
     //private static NotifyStream notify;
 
     // Statically populate the commandMap with the intended functionality
@@ -51,6 +49,16 @@ public class DiscordEvents {
         commandMap.put("top_games", (event, args) -> StatsMain.displayToGames(event.getChannel()));
 
         commandMapFun.put("level", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayYesterdayExp(event.getAuthor(),event.getGuild(),event.getChannel()));
+
+        dailyTask = new Runnable() {
+            @Override
+            public void run() {
+                log.info("Start hourly task");
+                StatsMain.resetStat();
+            }
+        };
+        EventHelper.setDailyTimer(dailyTask);
+
     }
 
     @EventSubscriber
@@ -129,7 +137,7 @@ public class DiscordEvents {
 
     @EventSubscriber
     public void onPresenceUpdate(PresenceUpdateEvent event){
-        StatsMain.updateUserPresence(event.getUser(), event.getOldPresence());
+        StatsMain.updateUserPresence(event.getUser(), event.getNewPresence());
     }
 
 }

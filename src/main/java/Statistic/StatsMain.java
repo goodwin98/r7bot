@@ -1,6 +1,8 @@
 package Statistic;
 
 import Statistic.Presence.GameTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
@@ -21,6 +23,7 @@ public class StatsMain {
     private DataBase dataBase;
     private Hashtable<IUser,User> users = new Hashtable<>();
     private IGuild currentGuild;
+    private static final Logger log = LoggerFactory.getLogger(StatsMain.class);
 
     public StatsMain(IGuild guild){
 
@@ -30,7 +33,8 @@ public class StatsMain {
         {
             for (IUser iUser:voiceChannel.getConnectedUsers())
             {
-                users.put(iUser,new User(iUser,voiceChannel));
+                if(!iUser.getVoiceStateForGuild(guild).isSelfDeafened() && !iUser.getVoiceStateForGuild(guild).isDeafened())
+                    users.put(iUser,new User(iUser,voiceChannel));
             }
         }
 
@@ -223,7 +227,7 @@ public class StatsMain {
         zdt = zdt.minusDays(1);
         int firstDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
 
-        int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,firstDate);
+        int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,firstDate, iGuild.getAFKChannel().getLongID());
         GameTime gameTime = Statistic.Presence.StatsMain.getGameTimeByUser(iUser.getLongID(),firstDate,firstDate );
         String greatMess = ", вчера твоя карма пополнилась всего лишь на ";
         if(iGuild.getLongID() == 349648434266898453L) // для туриста
@@ -237,6 +241,30 @@ public class StatsMain {
             iChannel.sendMessage(iUser.getDisplayName(iGuild) + greatMess +
                     exp + " " + rightWord(exp) + " опыта, но зато ты провел " +rightTime(gameTime.time) + " за игрой в " + gameTime.gameName);
         }
+    }
+    public void displayTopExpByGuild(IGuild iGuild, IChannel iChannel)
+    {
+        ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
+        int lastDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
+        zdt = zdt.minusDays(30);
+        int firstDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
+
+        ResultDataBase base = dataBase.getTopExp(iGuild.getLongID(),iGuild.getAFKChannel().getLongID(),firstDate,lastDate);
+
+        List<String> result= base.list.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).map((entry) -> {
+
+            StringBuilder row = new StringBuilder();
+            if (currentGuild.getUserByID(Long.valueOf(entry.getKey())) != null)
+                row.append(currentGuild.getUserByID(Long.valueOf(entry.getKey())).getName());
+            else
+                row.append(Long.valueOf(entry.getKey()));
+            row.append("\t\t");
+            row.append(entry.getValue());
+            row.append(" exp");
+            return row.toString();
+        }).collect(Collectors.toList());
+
+        iChannel.sendMessage(MessageBuilder.topExp(result,iGuild.getName()));
     }
 
     private String rightTime(int seconds)
@@ -309,6 +337,27 @@ public class StatsMain {
         } catch (DateTimeParseException e)
         {
             return "";
+        }
+    }
+    public void checkActualUsers()
+    {
+
+        for(IVoiceChannel voiceChannel : currentGuild.getVoiceChannels())
+        {
+            for (IUser iUser:voiceChannel.getConnectedUsers())
+            {
+                if(users.containsKey(iUser) &&
+                        (iUser.getVoiceStateForGuild(currentGuild).isSelfDeafened() || iUser.getVoiceStateForGuild(currentGuild).isDeafened()))
+                {
+                    log.info("user "+ iUser.getName() + " was leaved in checkActualUsers");
+                    userLeave(iUser);
+                } else if (!users.containsKey(iUser) &&
+                        (!iUser.getVoiceStateForGuild(currentGuild).isSelfDeafened() && !iUser.getVoiceStateForGuild(currentGuild).isDeafened()))
+                {
+                    log.info("user "+ iUser.getName() + " was added in checkActualUsers");
+                    userJoin(iUser,voiceChannel);
+                }
+            }
         }
     }
 }

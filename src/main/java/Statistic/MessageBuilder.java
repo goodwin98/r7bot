@@ -96,4 +96,36 @@ class MessageBuilder {
 
         return builder.build();
     }
+
+    static EmbedObject topExp(List<String> namesUsers, String guildName)
+    {
+        EmbedBuilder builder = new EmbedBuilder();
+        builder.withTitle(String.valueOf(namesUsers.size()) + " самых активных пользователей в " + guildName + ". За последнее время");
+
+        int count = 0;
+        int oldCount = 0;
+        StringBuilder list = new StringBuilder();
+        for(String aNamesUser : namesUsers)
+        {
+            list.append(count + 1);
+            list.append(". ");
+            list.append(aNamesUser);
+            list.append("\n");
+            count++;
+            if(count % 20 == 0)
+            {
+                builder.appendField(String.valueOf(oldCount + 1) +" - " + String.valueOf(count), list.toString(), true);
+                list.setLength(0);
+                oldCount = count;
+            }
+        }
+        if(list.length() == 0)
+        {
+            list.append("пусто\n");
+        }
+        if(count%20 != 0)
+            builder.appendField(String.valueOf(oldCount + 1) + " - " + String.valueOf(count),list.toString(), true);
+
+        return builder.build();
+    }
 }

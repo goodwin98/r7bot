@@ -269,11 +269,10 @@ class DataBase {
         return result;
     }
 
-    int getUserExpByGuild(long user, long guild, int firstDate, int lastDate)
+    int getUserExpByGuild(long user, long guild, int firstDate, int lastDate, long AFKChannel)
     {
-        String sqlSelect = "SELECT SUM(Seconds) FROM Stats JOIN " +
-                "UserChan ON Stats.userchan = UserChan.id JOIN channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = ? AND UserID = ? and type = 1 AND Data >= ? AND Data <= ?;";
+        String sqlSelect = "SELECT SUM(Seconds), type FROM Stats JOIN UserChan ON Stats.userchan = UserChan.id JOIN channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = ? AND UserID = ? AND Data >= ? and Data <= ? and ChanID != ? group by type;";
         PreparedStatement stmt;
         int exp = 0;
         try {
@@ -282,10 +281,17 @@ class DataBase {
             stmt.setString(2,Long.toString(user));
             stmt.setInt(3,firstDate);
             stmt.setInt(4,lastDate);
+            stmt.setString(5, Long.toString(AFKChannel));
             ResultSet row = stmt.executeQuery();
-            if(row.next())
+            while(row.next())
             {
-                exp = row.getInt("SUM(Seconds)");
+                if(row.getInt("type") == 1)
+                {
+                    exp = exp + row.getInt("SUM(Seconds)");
+                } else if (row.getInt("type") == 0)
+                {
+                    exp = exp + row.getInt("SUM(Seconds)")/900;
+                }
             }
 
         } catch (SQLException e)
@@ -293,6 +299,42 @@ class DataBase {
             log.error("Error read database" ,e);
         }
         return exp;
+    }
+
+    ResultDataBase getTopExp(long guild, long AFKChannel,int firstDate, int lastDate)
+    {
+        String sqlSelect = "SELECT UserID, Sum(case type when 1 then Seconds*900 else Seconds end )/900 as sum " +
+                "FROM Stats " +
+                "JOIN UserChan ON Stats.userchan = UserChan.id JOIN channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = ? " +
+                "AND Data >= ? AND data <= ? " +
+                "and ChanID != ? " +
+                "group by UserID " +
+                "order by sum desc " +
+                "limit 20;";
+
+        ResultDataBase result = new ResultDataBase();
+        result.list = new TreeMap<>(Collections.reverseOrder());
+
+        PreparedStatement stmt;
+        try {
+            stmt = connection.prepareStatement(sqlSelect);
+            stmt.setLong(1,guild);
+            stmt.setInt(2,firstDate);
+            stmt.setInt(3,lastDate);
+            stmt.setLong(4,AFKChannel);
+            ResultSet row = stmt.executeQuery();
+
+            while (row.next())
+            {
+                result.list.put(row.getString("UserID"), row.getInt("sum"));
+            }
+
+        } catch (SQLException e)
+        {
+            log.error("Error read database" ,e);
+        }
+        return result;
     }
     ResultUserStat getUserStat(long guild, String AFKChannel, String userId)
     {

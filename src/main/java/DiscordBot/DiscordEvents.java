@@ -21,7 +21,8 @@ public class DiscordEvents {
     // A static map of commands mapping from command string to the functional impl
     private static Map<String, Command> commandMap = new HashMap<>();
     private static Map<String, Command> commandMapFun = new HashMap<>();
-    private static Runnable dailyTask;
+    private static Runnable hourlyTask;
+    private static Runnable minutesTask;
     //private static NotifyStream notify;
 
     // Statically populate the commandMap with the intended functionality
@@ -48,17 +49,26 @@ public class DiscordEvents {
 
         commandMap.put("top_games", (event, args) -> StatsMain.displayToGames(event.getChannel()));
 
+        commandMap.put("top_exp", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayTopExpByGuild(event.getGuild(),event.getChannel()));
+
+        commandMap.put("check", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).checkActualUsers());
+
         commandMapFun.put("level", (event, args) -> EventHelper.getStatByGuild(event.getGuild()).displayYesterdayExp(event.getAuthor(),event.getGuild(),event.getChannel()));
 
-        dailyTask = new Runnable() {
-            @Override
-            public void run() {
-                log.info("Start hourly task");
-                StatsMain.resetStat();
+        hourlyTask = () -> {
+            log.info("Start hourly task");
+            StatsMain.resetStat();
+        };
+        EventHelper.setHourlyTimer(hourlyTask);
+
+        minutesTask = () -> {
+            for (Statistic.StatsMain stat : EventHelper.getAllStats())
+            {
+                log.info("start 5min task");
+                stat.checkActualUsers();
             }
         };
-        EventHelper.setDailyTimer(dailyTask);
-
+        EventHelper.set5MinutesTimer(minutesTask);
     }
 
     @EventSubscriber
@@ -139,5 +149,6 @@ public class DiscordEvents {
     public void onPresenceUpdate(PresenceUpdateEvent event){
         StatsMain.updateUserPresence(event.getUser(), event.getNewPresence());
     }
+
 
 }

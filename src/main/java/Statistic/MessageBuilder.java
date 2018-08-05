@@ -100,7 +100,7 @@ class MessageBuilder {
     static EmbedObject topExp(List<String> namesUsers, String guildName)
     {
         EmbedBuilder builder = new EmbedBuilder();
-        builder.withTitle(String.valueOf(namesUsers.size()) + " самых активных пользователей в " + guildName + ". За последнее время");
+        builder.withTitle(String.valueOf(namesUsers.size()) + " самых активных пользователей в " + guildName );
 
         int count = 0;
         int oldCount = 0;

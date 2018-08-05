@@ -271,8 +271,8 @@ class DataBase {
 
     int getUserExpByGuild(long user, long guild, int firstDate, int lastDate, long AFKChannel)
     {
-        String sqlSelect = "SELECT SUM(Seconds), type FROM Stats JOIN UserChan ON Stats.userchan = UserChan.id JOIN channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = ? AND UserID = ? AND Data >= ? and Data <= ? and ChanID != ? group by type;";
+        String sqlSelect = "SELECT SUM(case type when 1 then Seconds*900 else Seconds end )/900 as EXP FROM Stats JOIN UserChan ON Stats.userchan = UserChan.id JOIN channels ON UserChan.channel = channels.id " +
+                "WHERE Guild = ? AND UserID = ? AND Data >= ? and Data <= ? and ChanID != ?;";
         PreparedStatement stmt;
         int exp = 0;
         try {
@@ -285,13 +285,7 @@ class DataBase {
             ResultSet row = stmt.executeQuery();
             while(row.next())
             {
-                if(row.getInt("type") == 1)
-                {
-                    exp = exp + row.getInt("SUM(Seconds)");
-                } else if (row.getInt("type") == 0)
-                {
-                    exp = exp + row.getInt("SUM(Seconds)")/900;
-                }
+                exp = row.getInt("EXP");
             }
 
         } catch (SQLException e)

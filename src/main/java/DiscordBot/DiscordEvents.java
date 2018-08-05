@@ -64,7 +64,6 @@ public class DiscordEvents {
         minutesTask = () -> {
             for (Statistic.StatsMain stat : EventHelper.getAllStats())
             {
-                log.info("start 5min task");
                 stat.checkActualUsers();
             }
         };

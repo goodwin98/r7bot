@@ -24,6 +24,7 @@ public class StatsMain {
     private Hashtable<IUser,User> users = new Hashtable<>();
     private IGuild currentGuild;
     private static final Logger log = LoggerFactory.getLogger(StatsMain.class);
+    private final int FirstDayExp = 20180801;
 
     public StatsMain(IGuild guild){
 
@@ -224,10 +225,12 @@ public class StatsMain {
     public void displayYesterdayExp(IUser iUser, IGuild iGuild, IChannel iChannel)
     {
         ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
+        int nowDay = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
         zdt = zdt.minusDays(1);
         int firstDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
 
         int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,firstDate, iGuild.getAFKChannel().getLongID());
+        int totalExp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),FirstDayExp,nowDay, iGuild.getAFKChannel().getLongID());
         GameTime gameTime = Statistic.Presence.StatsMain.getGameTimeByUser(iUser.getLongID(),firstDate,firstDate );
         String greatMess = ", вчера твоя карма пополнилась всего лишь на ";
         if(iGuild.getLongID() == 349648434266898453L) // для туриста
@@ -236,20 +239,19 @@ public class StatsMain {
         }
         if(gameTime.time == 0) {
             iChannel.sendMessage(iUser.getDisplayName(iGuild) + greatMess +
-                    exp + " " + rightWord(exp) + " опыта");
+                    exp + " " + rightWord(exp) + " опыта, у тебя " + expToLvl(totalExp) + " уровень");
         } else {
             iChannel.sendMessage(iUser.getDisplayName(iGuild) + greatMess +
-                    exp + " " + rightWord(exp) + " опыта, но зато ты провел " +rightTime(gameTime.time) + " за игрой в " + gameTime.gameName);
+                    exp + " " + rightWord(exp) + " опыта, у тебя " + expToLvl(totalExp) +" уровень. И да, ты провел " +rightTime(gameTime.time) + " за игрой в " + gameTime.gameName);
         }
     }
     public void displayTopExpByGuild(IGuild iGuild, IChannel iChannel)
     {
         ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
         int lastDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
-        zdt = zdt.minusDays(30);
-        int firstDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
+        //zdt = zdt.minusDays(30);
 
-        ResultDataBase base = dataBase.getTopExp(iGuild.getLongID(),iGuild.getAFKChannel().getLongID(),firstDate,lastDate);
+        ResultDataBase base = dataBase.getTopExp(iGuild.getLongID(),iGuild.getAFKChannel().getLongID(),FirstDayExp,lastDate);
 
         List<String> result= base.list.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).map((entry) -> {
 
@@ -346,18 +348,35 @@ public class StatsMain {
         {
             for (IUser iUser:voiceChannel.getConnectedUsers())
             {
+
                 if(users.containsKey(iUser) &&
-                        (iUser.getVoiceStateForGuild(currentGuild).isSelfDeafened() || iUser.getVoiceStateForGuild(currentGuild).isDeafened()))
+                        (iUser.getVoiceStateForGuild(currentGuild).isSelfDeafened() ||
+                                iUser.getVoiceStateForGuild(currentGuild).isDeafened() ||
+                                voiceChannel.getConnectedUsers().size() == 1))
                 {
                     log.info("user "+ iUser.getName() + " was leaved in checkActualUsers");
                     userLeave(iUser);
                 } else if (!users.containsKey(iUser) &&
-                        (!iUser.getVoiceStateForGuild(currentGuild).isSelfDeafened() && !iUser.getVoiceStateForGuild(currentGuild).isDeafened()))
+                        (!iUser.getVoiceStateForGuild(currentGuild).isSelfDeafened() &&
+                                !iUser.getVoiceStateForGuild(currentGuild).isDeafened() &&
+                                voiceChannel.getConnectedUsers().size() != 1))
                 {
                     log.info("user "+ iUser.getName() + " was added in checkActualUsers");
                     userJoin(iUser,voiceChannel);
                 }
             }
         }
+    }
+    private int expToLvl(int exp)
+    {
+        if(exp == 0)
+            return 0;
+        int result = 0;
+        while(exp>0)
+        {
+            exp = exp - 20*result - 30;
+            result++;
+        }
+        return result-1;
     }
 }

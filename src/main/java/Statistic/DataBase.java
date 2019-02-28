@@ -269,10 +269,10 @@ class DataBase {
         return result;
     }
 
-    int getUserExpByGuild(long user, long guild, int firstDate, int lastDate, long AFKChannel)
+    int getUserExpByGuild(long user, long guild, int firstDate, int lastDate)
     {
-        String sqlSelect = "SELECT SUM(case type when 1 then Seconds*900 else Seconds end )/900 as EXP FROM Stats JOIN UserChan ON Stats.userchan = UserChan.id JOIN channels ON UserChan.channel = channels.id " +
-                "WHERE Guild = ? AND UserID = ? AND Data >= ? and Data <= ? and ChanID != ?;";
+        String sqlSelect = "SELECT UserID, Sum(Exp) as EXP FROM Exp_stat  " +
+                "WHERE Guild = ? AND UserID = ? AND Data >= ? and Data <= ?;";
         PreparedStatement stmt;
         int exp = 0;
         try {
@@ -281,7 +281,6 @@ class DataBase {
             stmt.setString(2,Long.toString(user));
             stmt.setInt(3,firstDate);
             stmt.setInt(4,lastDate);
-            stmt.setString(5, Long.toString(AFKChannel));
             ResultSet row = stmt.executeQuery();
             while(row.next())
             {
@@ -295,14 +294,11 @@ class DataBase {
         return exp;
     }
 
-    ResultDataBase getTopExp(long guild, long AFKChannel,int firstDate, int lastDate)
+    ResultDataBase getTopExp(long guild,int firstDate, int lastDate)
     {
-        String sqlSelect = "SELECT UserID, Sum(case type when 1 then Seconds*900 else Seconds end )/900 as sum " +
-                "FROM Stats " +
-                "JOIN UserChan ON Stats.userchan = UserChan.id JOIN channels ON UserChan.channel = channels.id " +
+        String sqlSelect = "SELECT UserID, Sum(Exp) as sum FROM Exp_stat " +
                 "WHERE Guild = ? " +
                 "AND Data >= ? AND data <= ? " +
-                "and ChanID != ? " +
                 "group by UserID " +
                 "order by sum desc " +
                 "limit 20;";
@@ -316,7 +312,6 @@ class DataBase {
             stmt.setLong(1,guild);
             stmt.setInt(2,firstDate);
             stmt.setInt(3,lastDate);
-            stmt.setLong(4,AFKChannel);
             ResultSet row = stmt.executeQuery();
 
             while (row.next())
@@ -329,6 +324,37 @@ class DataBase {
             log.error("Error read database" ,e);
         }
         return result;
+    }
+
+    void ChangeUserExp(long user, long guild, int expToChange)
+    {
+        String sqlUpdate = "update Exp_stat set exp = exp + ? WHERE Guild = ? AND Data = ?  and UserID = ?;";
+
+        String sqlInsert = "Insert into Exp_stat (UserID,Guild,Data,Exp) values (?,?,?,?);";
+        PreparedStatement stmt;
+        try {
+            stmt = connection.prepareStatement(sqlUpdate);
+            stmt.setInt(1,expToChange);
+            stmt.setLong(2,guild);
+            stmt.setInt(3,formatDate(0));
+            stmt.setLong(4,user);
+
+            int affected = stmt.executeUpdate();
+            if(affected == 0)
+            {
+                stmt = connection.prepareStatement(sqlInsert);
+                stmt.setLong(1,user);
+                stmt.setLong(2,guild);
+                stmt.setInt(3,formatDate(0));
+                stmt.setInt(4,expToChange);
+                stmt.executeUpdate();
+            }
+
+        } catch (SQLException e)
+        {
+            log.error("Error save exp to database" ,e);
+        }
+
     }
     ResultUserStat getUserStat(long guild, String AFKChannel, String userId)
     {

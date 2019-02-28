@@ -64,6 +64,7 @@ public class DiscordEvents {
         minutesTask = () -> {
             for (Statistic.StatsMain stat : EventHelper.getAllStats())
             {
+                log.info("chek");
                 stat.checkActualUsers();
             }
         };
@@ -73,6 +74,8 @@ public class DiscordEvents {
     @EventSubscriber
     public void onMessageReceived(MessageReceivedEvent event){
 
+        if(event.getGuild() == null)
+            return;
         int permission = Perm.getPermForUser(event.getAuthor(),event.getGuild());
         if(permission == 0)
             return;

@@ -25,6 +25,7 @@ public class StatsMain {
     private IGuild currentGuild;
     private static final Logger log = LoggerFactory.getLogger(StatsMain.class);
     private final int FirstDayExp = 20180801;
+    private final int VOICETIME_TO_EXP = 900;
 
     public StatsMain(IGuild guild){
 
@@ -32,10 +33,13 @@ public class StatsMain {
         dataBase = new DataBase();
         for(IVoiceChannel voiceChannel : guild.getVoiceChannels())
         {
+            if(currentGuild.getAFKChannel() == voiceChannel)
+                continue;
             for (IUser iUser:voiceChannel.getConnectedUsers())
             {
-                if(!iUser.getVoiceStateForGuild(guild).isSelfDeafened() && !iUser.getVoiceStateForGuild(guild).isDeafened())
-                    users.put(iUser,new User(iUser,voiceChannel));
+                users.put(iUser,new User(iUser,voiceChannel));
+                if(iUser.getVoiceStateForGuild(guild).isSelfDeafened() || iUser.getVoiceStateForGuild(guild).isDeafened())
+                    users.get(iUser).pauseExpTime();
             }
         }
 
@@ -52,13 +56,18 @@ public class StatsMain {
         int count = (message.split("[\\wа-яА-Я]{3,20}").length) / 3;
         if(count > 0) {
             dataBase.saveTextStat(user.getLongID(), textChan.getGuild().getLongID(), textChan.getLongID(), count);
+            dataBase.ChangeUserExp(user.getLongID(),textChan.getGuild().getLongID(),count);
         }
     }
 
     public void userJoin(IUser user, IVoiceChannel channel)
     {
-        if(!users.containsKey(user) && user.getRolesForGuild(currentGuild).size() != 0) {
+        if(!users.containsKey(user) && currentGuild.getAFKChannel() != channel) {
             users.put(user, new User(user, channel));
+            if(user.getVoiceStateForGuild(channel.getGuild()).isSelfDeafened() || user.getVoiceStateForGuild(channel.getGuild()).isDeafened())
+            {
+                users.get(user).pauseExpTime();
+            }
         }
     }
     public void userLeave(IUser user)
@@ -66,6 +75,7 @@ public class StatsMain {
        if (users.containsKey(user) )
        {
            dataBase.saveVoiceStat(users.get(user),currentGuild.getLongID());
+           dataBase.ChangeUserExp(user.getLongID(),currentGuild.getLongID(), (int) (users.get(user).getExpTime()/(VOICETIME_TO_EXP * 1000)));
            users.remove(user);
        }
     }
@@ -229,8 +239,8 @@ public class StatsMain {
         zdt = zdt.minusDays(1);
         int firstDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
 
-        int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,firstDate, iGuild.getAFKChannel().getLongID());
-        int totalExp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),FirstDayExp,nowDay, iGuild.getAFKChannel().getLongID());
+        int exp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),firstDate,firstDate);
+        int totalExp = dataBase.getUserExpByGuild(iUser.getLongID(),iGuild.getLongID(),FirstDayExp,nowDay);
         GameTime gameTime = Statistic.Presence.StatsMain.getGameTimeByUser(iUser.getLongID(),firstDate,firstDate );
         String greatMess = ", вчера твоя карма пополнилась всего лишь на ";
         if(iGuild.getLongID() == 349648434266898453L) // для туриста
@@ -251,7 +261,7 @@ public class StatsMain {
         int lastDate = Integer.parseInt(DateTimeFormatter.ofPattern("yyyyMMdd").format(zdt));
         //zdt = zdt.minusDays(30);
 
-        ResultDataBase base = dataBase.getTopExp(iGuild.getLongID(),iGuild.getAFKChannel().getLongID(),FirstDayExp,lastDate);
+        ResultDataBase base = dataBase.getTopExp(iGuild.getLongID(),FirstDayExp,lastDate);
 
         List<String> result= base.list.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).map((entry) -> {
 
@@ -354,15 +364,18 @@ public class StatsMain {
                                 iUser.getVoiceStateForGuild(currentGuild).isDeafened() ||
                                 voiceChannel.getConnectedUsers().size() == 1))
                 {
-                    log.info("user "+ iUser.getName() + " was leaved in checkActualUsers");
-                    userLeave(iUser);
-                } else if (!users.containsKey(iUser) &&
-                        (!iUser.getVoiceStateForGuild(currentGuild).isSelfDeafened() &&
+                    users.get(iUser).pauseExpTime();
+                    //userLeave(iUser);
+                } else if ( !iUser.getVoiceStateForGuild(currentGuild).isSelfDeafened() &&
                                 !iUser.getVoiceStateForGuild(currentGuild).isDeafened() &&
-                                voiceChannel.getConnectedUsers().size() != 1))
+                                voiceChannel.getConnectedUsers().size() != 1)
                 {
-                    log.info("user "+ iUser.getName() + " was added in checkActualUsers");
-                    userJoin(iUser,voiceChannel);
+                    if(!users.containsKey(iUser) ) {
+                        if(currentGuild.getAFKChannel() != voiceChannel){
+                            userJoin(iUser, voiceChannel);}
+                    } else {
+                        users.get(iUser).resumeExpTime();
+                    }
                 }
             }
         }

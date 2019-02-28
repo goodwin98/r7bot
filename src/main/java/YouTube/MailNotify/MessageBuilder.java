@@ -17,7 +17,7 @@ class MessageBuilder {
         builder.withImage(video.snippet.thumbnails.medium.url);
         //builder.withUrl("https://youtube.com/watch?v=" + video.id);
         builder.setLenient(true);
-        builder.appendField("Ссылки:","[YouTube](https://youtube.com/watch?v=" + video.id + ")\t\t[YT Gaming](https://gaming.youtube.com/watch?v=" + video.id + ")",false);
+        builder.appendField("Ссылки:","[YouTube](https://youtube.com/watch?v=" + video.id + ")  |  [YT Gaming](https://gaming.youtube.com/watch?v=" + video.id + ")",false);
         return builder.build();
     }
 
@@ -31,7 +31,7 @@ class MessageBuilder {
         builder.withImage(video.snippet.thumbnails.medium.url);
         //builder.withUrl("https://youtube.com/watch?v=" + video.id);
         builder.setLenient(true);
-        builder.appendField("Ссылки:","[YouTube](https://youtube.com/watch?v=" + video.id + ")\t\t[YT Gaming](https://gaming.youtube.com/watch?v=" + video.id + ")",false);
+        builder.appendField("Ссылки:","[YouTube](https://youtube.com/watch?v=" + video.id + ")  |  [YT Gaming](https://gaming.youtube.com/watch?v=" + video.id + ")",false);
         return builder.build();
     }
 }

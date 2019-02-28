@@ -55,7 +55,7 @@ class EventHelper {
 
     static void set5MinutesTimer(Runnable task)
     {
-        ses.scheduleAtFixedRate(task,5,5, TimeUnit.MINUTES);
+        ses.scheduleAtFixedRate(task,1,5, TimeUnit.MINUTES);
     }
 
 }

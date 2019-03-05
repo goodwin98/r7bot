@@ -7,13 +7,18 @@ public class Body {
     public String BOT_TOKEN;
     public String BOT_PREFIX;
     public String YOUTUBE_KEY;
+    public String TWITCH_KEY;
+    public String CALLBACK_ADDR;
+    public int CALLBACK_PORT;
     public String   IMAP_AUTH_EMAIL;
     public String   IMAP_AUTH_PWD;
     public String   IMAP_Server;
     public String   IMAP_Port;
     public Statistic statistic = new Statistic();
-    public YouTubeNotify youTubeNotify = new YouTubeNotify();
+   //public YouTubeNotify youTubeNotify = new YouTubeNotify();
 
     public List<YouTubeSubscribeItem> youTubeSubscribeItemList = new ArrayList<>();
+
+    public List<TwitchSubscribeItem> twitchSubscribeItems = new ArrayList<>();
 
 }

@@ -1,6 +1,8 @@
 package DiscordBot;
 
 import Statistic.StatsMain;
+import Twitch.Helper;
+import Twitch.WebHookServer;
 import YouTube.MailNotify.Subscriber;
 import YouTube.NotifyStream;
 import org.slf4j.Logger;
@@ -20,7 +22,8 @@ class EventHelper {
     private static final Logger log = LoggerFactory.getLogger(EventHelper.class);
     private static NotifyStream notify;
     private static HashMap<IGuild, StatsMain> statsList = new HashMap<>();
-    private static Subscriber subscriber = new Subscriber();
+    private static Subscriber ytSubscriber = new Subscriber();
+    private static WebHookServer twitch = new WebHookServer();
     private static ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
 
 
@@ -45,8 +48,13 @@ class EventHelper {
             statsList.put(guild, new StatsMain(guild));
         //notify = new NotifyStream(guild);
 
-        subscriber.addGuild(guild);
+        ytSubscriber.addGuild(guild);
+        twitch.getHelper().addGuild(guild);
+    }
 
+    static Helper getTwitchHelper()
+    {
+        return twitch.getHelper();
     }
     static void setHourlyTimer(Runnable task)
     {

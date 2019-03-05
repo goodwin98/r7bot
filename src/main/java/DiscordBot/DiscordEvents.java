@@ -58,6 +58,7 @@ public class DiscordEvents {
         hourlyTask = () -> {
             log.info("Start hourly task");
             StatsMain.resetStat();
+            EventHelper.getTwitchHelper().CheckAndUpdateSubs();
         };
         EventHelper.setHourlyTimer(hourlyTask);
 

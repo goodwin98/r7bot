@@ -26,7 +26,6 @@ public class Settings {
             log.error("Error load settings", e);
             return false;
         }
-
         return true;
     }
 

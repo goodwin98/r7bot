@@ -189,7 +189,7 @@ public class Subscriber {
             {
                 SubscribItem item = new SubscribItem(guild,guild.getChannelByID(settingsItem.channel), settingsItem.ytChans);
                 subscribItems.add(item);
-                log.info("Subscribe settings for guild " + guild.getName() + " has been added");
+                log.info("YT Subscribe settings for guild " + guild.getName() + " has been added");
             }
         }
     }
